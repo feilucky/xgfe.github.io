@@ -121,13 +121,6 @@
     </url>
 
     <url>
-        <loc>http://xgfe.github.io/tags/React-Native/</loc>
-        <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://xgfe.github.io/tags/ReactART/</loc>
         <lastmod>2017-09-12T08:00:08.000Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -290,20 +283,6 @@
 
     <url>
         <loc>http://xgfe.github.io/tags/hopper/</loc>
-        <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>http://xgfe.github.io/tags/React/</loc>
-        <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>http://xgfe.github.io/tags/optimization/</loc>
         <lastmod>2017-09-12T08:00:08.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -548,13 +527,6 @@
     </url>
 
     <url>
-        <loc>http://xgfe.github.io/tags/Android/</loc>
-        <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://xgfe.github.io/tags/Vue/</loc>
         <lastmod>2017-09-12T08:00:08.000Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -661,14 +633,49 @@
 
     <url>
         <loc>http://xgfe.github.io/tags/javascript/</loc>
-        <lastmod>2017-09-12T08:40:55.000Z</lastmod>
+        <lastmod>2017-09-22T03:58:49.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
         <loc>http://xgfe.github.io/tags/ES6/</loc>
-        <lastmod>2017-09-12T08:40:55.000Z</lastmod>
+        <lastmod>2017-09-22T03:58:49.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/tags/Android/</loc>
+        <lastmod>2017-09-22T03:58:49.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/tags/%E5%B8%83%E5%B1%80/</loc>
+        <lastmod>2017-09-22T03:58:49.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/tags/React-Native/</loc>
+        <lastmod>2017-09-22T06:11:01.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/tags/React/</loc>
+        <lastmod>2017-09-22T06:11:01.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/tags/optimization/</loc>
+        <lastmod>2017-09-22T06:11:01.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>

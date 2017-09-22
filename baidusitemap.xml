@@ -3,8 +3,72 @@
 
     
   <url>
+    <loc>http://xgfe.ienav.com/2017/07/10/lulutia/immutable-RN-Redux/</loc>
+    <lastmod>2017-09-22T06:11:01.000Z</lastmod>
+    <data>
+        <display>
+        <title>基于React-Native及Redux的Immutable.js引入</title>
+        <pubTime>2017-07-10T12:07:00.000Z</pubTime>
+        
+        <tag>React Native </tag>
+         
+        <tag>React </tag>
+         
+        <tag>optimization </tag>
+         
+         
+           
+             
+              <breadCrumb title="lulutia" url="http://xgfe.ienav.com/categories/lulutia/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://xgfe.ienav.com/2017/06/22/lulutia/reactnative01/</loc>
+    <lastmod>2017-09-22T06:11:01.000Z</lastmod>
+    <data>
+        <display>
+        <title>React Native 学习系列一</title>
+        <pubTime>2017-06-22T13:12:00.000Z</pubTime>
+        
+        <tag>React Native </tag>
+         
+         
+           
+             
+              <breadCrumb title="lulutia" url="http://xgfe.ienav.com/categories/lulutia/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://xgfe.ienav.com/2017/06/28/lulutia/reactnative02/</loc>
+    <lastmod>2017-09-22T06:11:01.000Z</lastmod>
+    <data>
+        <display>
+        <title>React Native 学习系列二</title>
+        <pubTime>2017-06-28T14:03:12.000Z</pubTime>
+        
+        <tag>React Native </tag>
+         
+         
+           
+             
+              <breadCrumb title="lulutia" url="http://xgfe.ienav.com/categories/lulutia/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://xgfe.ienav.com/2017/08/28/DaisyXL/ES6/</loc>
-    <lastmod>2017-09-12T08:40:55.000Z</lastmod>
+    <lastmod>2017-09-22T03:58:49.000Z</lastmod>
     <data>
         <display>
         <title>ES6项目构建</title>
@@ -18,6 +82,28 @@
            
              
               <breadCrumb title="DaisyXL" url="http://xgfe.ienav.com/categories/DaisyXL/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://xgfe.ienav.com/2017/09/17/ivanchou/layout-with-constraintlayout-by-programming/</loc>
+    <lastmod>2017-09-22T03:58:49.000Z</lastmod>
+    <data>
+        <display>
+        <title>ConstraintLayout 采用代码方式布局用法简介</title>
+        <pubTime>2017-09-16T16:00:00.000Z</pubTime>
+        
+        <tag>Android </tag>
+         
+        <tag>布局 </tag>
+         
+         
+           
+             
+              <breadCrumb title="ivanchou" url="http://xgfe.ienav.com/categories/ivanchou/"/>
           
         </display>
     </data>
@@ -44,102 +130,6 @@
            
              
               <breadCrumb title="penglu" url="http://xgfe.ienav.com/categories/penglu/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://xgfe.ienav.com/2015/12/17/HeOH/AngularJS%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/</loc>
-    <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-    <data>
-        <display>
-        <title>Angular的自动化测试</title>
-        <pubTime>2015-12-16T16:00:00.000Z</pubTime>
-        
-        <tag>angular </tag>
-         
-        <tag>karma </tag>
-         
-        <tag>jasmine </tag>
-         
-        <tag>测试 </tag>
-         
-        <tag>单元测试 </tag>
-         
-        <tag>端到端测试 </tag>
-         
-         
-           
-             
-              <breadCrumb title="HeOH" url="http://xgfe.ienav.com/categories/HeOH/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://xgfe.ienav.com/2015/10/21/HeOH/xg-htmlhint-for-vim/</loc>
-    <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-    <data>
-        <display>
-        <title>Vim使用xg-htmlhint配置教程</title>
-        <pubTime>2015-10-20T16:00:00.000Z</pubTime>
-        
-        <tag>vim </tag>
-         
-        <tag>htmlhint </tag>
-         
-         
-           
-             
-              <breadCrumb title="HeOH" url="http://xgfe.ienav.com/categories/HeOH/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://xgfe.ienav.com/2017/05/24/LexHuang/Inline-Caches/</loc>
-    <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-    <data>
-        <display>
-        <title>【译】用JavaScript解释JavaScript虚拟机-内联缓存（inline caches）</title>
-        <pubTime>2017-05-24T03:30:00.000Z</pubTime>
-        
-        <tag>JavaScript </tag>
-         
-        <tag>V8 </tag>
-         
-         
-           
-             
-              <breadCrumb title="LexHuang" url="http://xgfe.ienav.com/categories/LexHuang/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://xgfe.ienav.com/2017/05/03/LexHuang/web-worker/</loc>
-    <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-    <data>
-        <display>
-        <title>web worker详解</title>
-        <pubTime>2017-05-03T03:30:00.000Z</pubTime>
-        
-        <tag>javascript </tag>
-         
-        <tag>web api </tag>
-         
-         
-           
-             
-              <breadCrumb title="LexHuang" url="http://xgfe.ienav.com/categories/LexHuang/"/>
           
         </display>
     </data>
@@ -570,43 +560,44 @@
 
     
   <url>
-    <loc>http://xgfe.ienav.com/2017/09/12/lulutia/immutable-RN-Redux/</loc>
+    <loc>http://xgfe.ienav.com/2015/09/23/hello-world/</loc>
     <lastmod>2017-09-12T08:00:08.000Z</lastmod>
     <data>
         <display>
-        <title>基于React-Native及Redux的Immutable.js引入</title>
-        <pubTime>2017-09-12T08:00:08.000Z</pubTime>
+        <title>Hello World</title>
+        <pubTime>2015-09-23T03:41:42.000Z</pubTime>
         
-        <tag>React Native </tag>
-         
-        <tag>React </tag>
-         
-        <tag>optimization </tag>
-         
          
            
-             
-              <breadCrumb title="lulutia" url="http://xgfe.ienav.com/categories/lulutia/"/>
-          
         </display>
     </data>
     </url>
 
     
   <url>
-    <loc>http://xgfe.ienav.com/2017/09/12/lulutia/reactnative01/</loc>
+    <loc>http://xgfe.ienav.com/2015/12/17/HeOH/AngularJS%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/</loc>
     <lastmod>2017-09-12T08:00:08.000Z</lastmod>
     <data>
         <display>
-        <title>React Native 学习系列一</title>
-        <pubTime>2017-09-12T08:00:08.000Z</pubTime>
+        <title>Angular的自动化测试</title>
+        <pubTime>2015-12-16T16:00:00.000Z</pubTime>
         
-        <tag>React Native </tag>
+        <tag>angular </tag>
+         
+        <tag>karma </tag>
+         
+        <tag>jasmine </tag>
+         
+        <tag>测试 </tag>
+         
+        <tag>单元测试 </tag>
+         
+        <tag>端到端测试 </tag>
          
          
            
              
-              <breadCrumb title="lulutia" url="http://xgfe.ienav.com/categories/lulutia/"/>
+              <breadCrumb title="HeOH" url="http://xgfe.ienav.com/categories/HeOH/"/>
           
         </display>
     </data>
@@ -638,19 +629,21 @@
 
     
   <url>
-    <loc>http://xgfe.ienav.com/2017/09/12/lulutia/reactnative02/</loc>
+    <loc>http://xgfe.ienav.com/2015/10/21/HeOH/xg-htmlhint-for-vim/</loc>
     <lastmod>2017-09-12T08:00:08.000Z</lastmod>
     <data>
         <display>
-        <title>React Native 学习系列二</title>
-        <pubTime>2017-09-12T08:00:08.000Z</pubTime>
+        <title>Vim使用xg-htmlhint配置教程</title>
+        <pubTime>2015-10-20T16:00:00.000Z</pubTime>
         
-        <tag>React Native </tag>
+        <tag>vim </tag>
+         
+        <tag>htmlhint </tag>
          
          
            
              
-              <breadCrumb title="lulutia" url="http://xgfe.ienav.com/categories/lulutia/"/>
+              <breadCrumb title="HeOH" url="http://xgfe.ienav.com/categories/HeOH/"/>
           
         </display>
     </data>
@@ -768,15 +761,22 @@
 
     
   <url>
-    <loc>http://xgfe.ienav.com/2015/09/23/hello-world/</loc>
+    <loc>http://xgfe.ienav.com/2017/05/24/LexHuang/Inline-Caches/</loc>
     <lastmod>2017-09-12T08:00:08.000Z</lastmod>
     <data>
         <display>
-        <title>Hello World</title>
-        <pubTime>2015-09-23T03:41:42.000Z</pubTime>
+        <title>【译】用JavaScript解释JavaScript虚拟机-内联缓存（inline caches）</title>
+        <pubTime>2017-05-24T03:30:00.000Z</pubTime>
         
+        <tag>JavaScript </tag>
+         
+        <tag>V8 </tag>
+         
          
            
+             
+              <breadCrumb title="LexHuang" url="http://xgfe.ienav.com/categories/LexHuang/"/>
+          
         </display>
     </data>
     </url>
@@ -1270,6 +1270,28 @@
     
     
   <url>
+    <loc>http://xgfe.ienav.com/2017/05/03/LexHuang/web-worker/</loc>
+    <lastmod>2017-09-12T08:00:08.000Z</lastmod>
+    <data>
+        <display>
+        <title>web worker详解</title>
+        <pubTime>2017-05-03T03:30:00.000Z</pubTime>
+        
+        <tag>javascript </tag>
+         
+        <tag>web api </tag>
+         
+         
+           
+             
+              <breadCrumb title="LexHuang" url="http://xgfe.ienav.com/categories/LexHuang/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://xgfe.ienav.com/2016/11/09/zhouxiong/vue-in-action-vue-basis/</loc>
     <lastmod>2017-09-12T08:00:08.000Z</lastmod>
     <data>
@@ -1278,28 +1300,6 @@
         <pubTime>2016-11-09T04:00:00.000Z</pubTime>
         
         <tag>Vue.js </tag>
-         
-         
-           
-             
-              <breadCrumb title="zhouxiong" url="http://xgfe.ienav.com/categories/zhouxiong/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://xgfe.ienav.com/2015/12/24/zhouxiong/server-ssh2/</loc>
-    <lastmod>2017-09-12T08:00:08.000Z</lastmod>
-    <data>
-        <display>
-        <title>后台SSH2框架分享</title>
-        <pubTime>2015-12-24T08:00:00.000Z</pubTime>
-        
-        <tag>java </tag>
-         
-        <tag>SSH2 </tag>
          
          
            
@@ -1394,6 +1394,28 @@
         <tag>Vue-router2.0 </tag>
          
         <tag>Vuex2.0 </tag>
+         
+         
+           
+             
+              <breadCrumb title="zhouxiong" url="http://xgfe.ienav.com/categories/zhouxiong/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://xgfe.ienav.com/2015/12/24/zhouxiong/server-ssh2/</loc>
+    <lastmod>2017-09-12T08:00:08.000Z</lastmod>
+    <data>
+        <display>
+        <title>后台SSH2框架分享</title>
+        <pubTime>2015-12-24T08:00:00.000Z</pubTime>
+        
+        <tag>java </tag>
+         
+        <tag>SSH2 </tag>
          
          
            

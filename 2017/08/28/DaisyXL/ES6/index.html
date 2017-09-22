@@ -43,7 +43,7 @@
 <meta property="og:image" content="https://p0.meituan.net/dpnewvc/98edd093d4e832cd1c7bcfdfd2f699d8277917.png">
 <meta property="og:image" content="https://p1.meituan.net/dpnewvc/dcb6af4925ecdda34fa5ab6452b969ad99150.png">
 <meta property="og:image" content="https://p1.meituan.net/dpnewvc/ba5a70a25d75752961db41f1b315cb7627416.png">
-<meta property="og:updated_time" content="2017-09-12T08:40:55.000Z">
+<meta property="og:updated_time" content="2017-09-22T03:58:49.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ES6项目构建">
 <meta name="twitter:description" content="本文主要结合自己学习ES6的过程，说明了如何从零开始搭建一个ES6前端框架，并在大家都很关注的彩票业务中进行应用。">
@@ -257,9 +257,7 @@
       
         <span itemprop="articleBody"><p>本文主要结合自己学习ES6的过程，说明了如何从零开始搭建一个ES6前端框架，并在大家都很关注的彩票业务中进行应用。</p>
 <a id="more"></a>
-<h1 id="前言：为什么要使用ES6？"><a href="#前言：为什么要使用ES6？" class="headerlink" title="前言：为什么要使用ES6？"></a>前言：为什么要使用ES6？</h1><p>ECMAScript6，又叫ECMAScript 2015，和ES3以及ES5的区别大概就像下面这个图一样，ES6相对早先几个版本有更加强大的生产力，能够提高开发效率。<br><img src="https://p0.meituan.net/dpnewvc/98edd093d4e832cd1c7bcfdfd2f699d8277917.png" width="1000px" height="300px"><br>同样实现对象深拷贝，看看下面两种实现方式。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//ES5</span></div><div class="line"><span class="keyword">var</span> creatAssign = <span class="function"><span class="keyword">function</span>(<span class="params">keysFunc, defaults</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">obj</span>) </span>&#123;</div><div class="line">        <span class="keyword">var</span> length = <span class="built_in">arguments</span>.length;</div><div class="line">        <span class="keyword">if</span> (defaults) &#123;</div><div class="line">            obj = <span class="built_in">Object</span>(obj);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (length &lt; <span class="number">2</span> || obj == <span class="literal">null</span>) &#123;</div><div class="line">            <span class="keyword">return</span> obj;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">1</span>; i&lt;length; i++) &#123;</div><div class="line">            <span class="keyword">var</span> source = <span class="built_in">arguments</span>[index];</div><div class="line">            <span class="keyword">var</span> keys = keysFunc(source);</div><div class="line">            <span class="keyword">var</span> len = key.length;</div><div class="line">            <span class="keyword">for</span>(<span class="keyword">var</span> j=<span class="number">0</span>; j&lt;length; j++) &#123;</div><div class="line">                <span class="keyword">var</span> key = keys[i];</div><div class="line">                <span class="keyword">if</span> (!defaults || obj[key] === <span class="keyword">void</span> <span class="number">0</span>) &#123;</div><div class="line">                    obj[key] = source[key];</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> obj;</div><div class="line">    &#125;;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> allKeys = <span class="function"><span class="keyword">function</span>(<span class="params">obj</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> keys = [];</div><div class="line">    <span class="keyword">for</span>(key <span class="keyword">in</span> obj) &#123;</div><div class="line">        keys.push(key);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> keys;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> extend = creatAssign(allKeys);</div><div class="line">extend(&#123;<span class="attr">t</span>:<span class="number">1</span>&#125;, &#123;<span class="attr">k</span>:<span class="number">2</span>&#125;);</div></pre></td></tr></table></figure></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//ES6</span></div><div class="line"><span class="keyword">const</span> deepClone=<span class="function">(<span class="params">obj</span>)=&gt;</span>&#123;</div><div class="line">   <span class="keyword">var</span> proto=<span class="built_in">Object</span>.getPrototypeOf(obj);</div><div class="line">   <span class="keyword">return</span> <span class="built_in">Object</span>.assign(&#123;&#125;,<span class="built_in">Object</span>.create(proto),obj);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>显而易见，ES6提供了深拷贝的接口，通过Object.getPrototypeOf函数得到obj被克隆函数的原型上的属性，然后通过Object.assign实现深度克隆，可以两行代码完胜ES5实现对象深拷贝。</p>
+<h1 id="前言：为什么要使用ES6？"><a href="#前言：为什么要使用ES6？" class="headerlink" title="前言：为什么要使用ES6？"></a>前言：为什么要使用ES6？</h1><p>ECMAScript6，又叫ECMAScript 2015，和ES3以及ES5的区别大概就像下面这个图一样，ES6相对早先几个版本有更加强大的生产力，能够提高开发效率。<br><img src="https://p0.meituan.net/dpnewvc/98edd093d4e832cd1c7bcfdfd2f699d8277917.png" width="1000px" height="300px"></p>
 <h1 id="ES6一些比较好的特性"><a href="#ES6一些比较好的特性" class="headerlink" title="ES6一些比较好的特性"></a>ES6一些比较好的特性</h1><p><strong>1.默认参数</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//ES5</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params">txt</span>) </span>&#123;</div><div class="line">    txt = txt || <span class="string">'hello world'</span>;</div><div class="line">&#125;</div><div class="line"><span class="comment">//ES6</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params">txt = <span class="string">'hello'</span></span>) </span>&#123;</div><div class="line">    <span class="comment">//减少了代码冗余</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p><strong>2.字符串模版</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//ES5-引用underscore这个第三方库实现</span></div><div class="line"><span class="keyword">var</span> compiled = _.template(<span class="string">"hello: &lt;%= name %&gt;"</span>);</div><div class="line">compiled(&#123;<span class="attr">name</span>: <span class="string">'xueningjiejie'</span>&#125;);</div><div class="line"><span class="comment">//ES6</span></div><div class="line"><span class="keyword">var</span> name = <span class="string">'xnjj'</span>;</div><div class="line"><span class="keyword">var</span> txt = <span class="string">`hello <span class="subst">$&#123;name&#125;</span>`</span>;</div></pre></td></tr></table></figure></p>
 <p>当然，这篇文章不是一篇讲解ES6特性的文章，因此不会一一陈述，那么ES6还有哪些特性呢？<br>1.解构赋值： 改变了参数赋值和变量赋值的形式，使赋值方式更加多样。<br>2.箭头函数<br>3.Set和Map<br>4.异步操作，如Promise()<br>5.类和对象<br>6.模块化<br>…<br>想要了解更多具体特性，请认真研读阮一峰的<a href="http://es6.ruanyifeng.com/" target="_blank" rel="external">ECMAScript 6入门</a> </p>
@@ -342,7 +340,7 @@ npm install
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/06/26/zero/Looper和Handler和HandlerThread/" rel="next">Looper和Handler和HandlerThread</a>
+              <a href="/2017/07/10/lulutia/immutable-RN-Redux/" rel="next">基于React-Native及Redux的Immutable.js引入</a>
             
           </div>
         </div>
@@ -427,21 +425,21 @@ npm install
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">67</span>
+              <span class="site-state-item-count">68</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             
-              <span class="site-state-item-count">20</span>
+              <span class="site-state-item-count">21</span>
               <span class="site-state-item-name">作者</span>
               
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">96</span>
+              <span class="site-state-item-count">97</span>
               <span class="site-state-item-name">标签</span>
               </a>
           </div>
