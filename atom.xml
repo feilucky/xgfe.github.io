@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://xgfe.github.io/"/>
-  <updated>2017-09-22T03:58:49.000Z</updated>
+  <updated>2017-09-27T09:59:20.000Z</updated>
   <id>http://xgfe.github.io/</id>
   
   <author>
@@ -14,6 +14,253 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>关于富文本AttributedString的使用总结</title>
+    <link href="http://xgfe.github.io/2017/09/22/Sudaxi/attributeStr1/"/>
+    <id>http://xgfe.github.io/2017/09/22/Sudaxi/attributeStr1/</id>
+    <published>2017-09-22T08:00:00.000Z</published>
+    <updated>2017-09-27T09:59:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>本文主要分析了富文本常用的属性设置，平时工作过程经常遇到一些有特殊需求的label、UITextField、UITextView。一般情况下，大家都喜欢直接用多个label来实现其不同的属性，很多人忽略了label本身的富文本属性。本文针对富文本进行了详细的介绍。<br><a id="more"></a></p>
+<p>首先先大概了解一下NSAttributedString 的21个属性。<br>常见的属性大概如下：<br><img src="http://p0.meituan.net/xgfe/8ac5ef6b34677319cfc020c8a1406681105850.jpg" width="600" height="600" alt="常见属性"></p>
+<p>API: Character Attributes , NSAttributedString 共有21个属性</p>
+<pre><code>1. NSFontAttributeName -&gt;设置字体属性，默认值：字体：Helvetica(Neue) 字号：12
+2. NSParagraphStyleAttributeName -&gt;设置文本段落排版格式，取值为 NSParagraphStyle 对象
+3. NSForegroundColorAttributeName -&gt;设置字体颜色，取值为 UIColor对象，默认值为黑色
+4. NSBackgroundColorAttributeName -&gt;设置字体所在区域背景颜色，取值为 UIColor对象，默认值为nil, 透明色
+5. NSLigatureAttributeName -&gt;设置连体属性，取值为NSNumber 对象(整数)，0 表示没有连体字符，1 表示使用默认的连体字符
+6. NSKernAttributeName -&gt;设置字符间距，取值为 NSNumber 对象（整数），正值间距加宽，负值间距变窄
+7. NSStrikethroughStyleAttributeName -&gt;设置删除线，取值为 NSNumber 对象（整数）
+8. NSStrikethroughColorAttributeName -&gt;设置删除线颜色，取值为 UIColor 对象，默认值为黑色
+9. NSUnderlineStyleAttributeName -&gt;设置下划线，取值为 NSNumber 对象（整数），枚举常量 NSUnderlineStyle中的值，与删除线类似
+10. NSUnderlineColorAttributeName -&gt;设置下划线颜色，取值为 UIColor 对象，默认值为黑色
+11. NSStrokeWidthAttributeName -&gt;设置笔画宽度(粗细)，取值为 NSNumber 对象（整数），负值填充效果，正值中空效果
+12. NSStrokeColorAttributeName -&gt;填充部分颜色，不是字体颜色，取值为 UIColor 对象
+13. NSShadowAttributeName -&gt;设置阴影属性，取值为 NSShadow 对象
+14. NSTextEffectAttributeName -&gt;设置文本特殊效果，取值为 NSString 对象，目前只有图版印刷效果可用
+15. NSBaselineOffsetAttributeName -&gt;设置基线偏移值，取值为 NSNumber （float）,正值上偏，负值下偏
+16. NSObliquenessAttributeName -&gt;设置字形倾斜度，取值为 NSNumber （float）,正值右倾，负值左倾
+17. NSExpansionAttributeName -&gt;设置文本横向拉伸属性，取值为 NSNumber （float）,正值横向拉伸文本，负值横向压缩文本
+18. NSWritingDirectionAttributeName -&gt;设置文字书写方向，从左向右书写或者从右向左书写
+19. NSVerticalGlyphFormAttributeName -&gt;设置文字排版方向，取值为 NSNumber 对象(整数)，0 表示横排文本，1 表示竖排文本
+20. NSLinkAttributeName -&gt;设置链接属性，点击后调用浏览器打开指定URL地址
+21.NSAttachmentAttributeName -&gt;设置文本附件,取值为NSTextAttachment对象,常用于文字图片混排
+</code></pre><p>下面分别详细介绍整段文字不同属性的两种使用方式：</p>
+<p>1、对一整段文字进行初始化，分范围（range主要是NSMakeRange(NSUInteger loc, NSUInteger len)）下标和长度进行属性化。实现不同的文字样式，再进行控件赋值。</p>
+<pre><code>//其中\n可以达到分行的效果
+NSString *str = @&quot;鲁班七号\n啦哈哈哈哈，不得了了。\n有人需要技术支持吗？\n鲁班大师，智商二百五，膜拜，极度膜拜。\n正在思考，如何攻克地心引力。\n请你们绕行，见识新发明的威力。\n不得不承认，有时候肌肉比头脑管用。\n检测了对面的智商，嘿嘿嘿，看来无法发挥全部实力啦。\n漏漏漏漏漏漏油啦。\n看，天上的飞机。\n相信科学。\n刮风了，吓到了。\n我想静～静～～&quot;;
+NSMutableAttributedString *attributedStr = [[NSMutableAttributedString alloc] initWithString:str];
+//改变某个范围的文字颜色
+[attributedStr addAttribute:NSForegroundColorAttributeName value:[UIColor magentaColor] range:NSMakeRange(16, 10)];
+//设置特殊字体
+[attributedStr addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:20] range:NSMakeRange(27, 4)];
+
+[attributedStr addAttributes:@{NSFontAttributeName:[UIFont boldSystemFontOfSize:17],
+                               NSUnderlineStyleAttributeName:@1,
+                               NSUnderlineColorAttributeName:[UIColor redColor]
+                               } range:NSMakeRange(32, 5)];
+
+[attributedStr addAttributes:@{NSFontAttributeName:[UIFont boldSystemFontOfSize:30],
+                               NSForegroundColorAttributeName:[UIColor brownColor],
+                               NSBackgroundColorAttributeName:[UIColor yellowColor]
+                               } range:NSMakeRange(0, 4)];
+//给控件赋值
+self.showLa.attributedText = attributedStr;
+</code></pre><p> 运行效果如下：<br> <img src="http://p0.meituan.net/xgfe/c2aebeaf980a1a784389fa2c4afa2efa113929.jpg" width="300" height="300" alt=""></p>
+<p> 2、整段文字，根据不同的需求，拆分成n个string。创建字典，将每个string的属性初始化。然后通过拼接string将文字串起来。再给控件的赋值</p>
+<pre><code> NSMutableAttributedString *muAttributedStr = [[NSMutableAttributedString alloc] init];
+ NSString *titleStr = @&quot;王昭君。\n&quot;;
+ NSDictionary *titleDict = @{
+                             NSFontAttributeName:[UIFont boldSystemFontOfSize:30],
+                             NSForegroundColorAttributeName:[UIColor brownColor],
+                             NSBackgroundColorAttributeName:[UIColor yellowColor]
+                             };
+ NSAttributedString *attStr = [[NSAttributedString alloc] initWithString:titleStr attributes:titleDict];
+ [muAttributedStr appendAttributedString:attStr];
+
+ NSShadow *shadow = [[NSShadow alloc] init];
+ shadow.shadowColor = [UIColor purpleColor];
+ shadow.shadowOffset = CGSizeMake(5, 5);
+ shadow.shadowBlurRadius = 3.0; 
+NSString *str1 = @&quot;凛冬已至，故乡的梅花开了吗。\n心已经融化。\n身躯已然冰封，灵魂仍旧火热。\n寒梅，无处不在。\n&quot;;
+NSDictionary *dict1 = @{
+                         NSKernAttributeName:@5,//字符间距
+                         NSShadowAttributeName:shadow,//阴影
+                         NSStrikethroughStyleAttributeName:@2,
+                         NSStrikethroughColorAttributeName:[UIColor redColor]
+                         };
+ NSAttributedString *attStr1 = [[NSAttributedString alloc] initWithString:str1 attributes:dict1];
+ [muAttributedStr appendAttributedString:attStr1];
+
+
+ NSString *str2 = @&quot;凛寒梅，无处不在。\n替你们消消火。\n&quot;;
+ NSDictionary *dict2 = @{
+                         NSKernAttributeName:@5,//字符间距
+                         NSShadowAttributeName:shadow,//阴影
+                         NSStrikethroughStyleAttributeName:@2,
+                         NSStrikethroughColorAttributeName:[UIColor redColor]
+                         };
+ NSAttributedString *attStr2 = [[NSAttributedString alloc] initWithString:str2 attributes:dict2];
+ [muAttributedStr appendAttributedString:attStr2];
+
+ NSString *str3 = @&quot;百梅落下之日，归去故里之时。\n&quot;;
+ NSDictionary *dict3 = @{
+                         NSBaselineOffsetAttributeName:@5,
+                         NSUnderlineStyleAttributeName:@1,
+                         NSUnderlineColorAttributeName:[UIColor redColor],
+                         NSObliquenessAttributeName:@1
+                         };
+ NSAttributedString *attStr3 = [[NSAttributedString alloc] initWithString:str3 attributes:dict3];
+ [muAttributedStr appendAttributedString:attStr3];
+
+ NSString *str31 = @&quot;美貌是种罪孽，暴雪也无法掩埋。\n&quot;;
+ NSDictionary *dict31 = @{
+                         NSBaselineOffsetAttributeName:@2,
+                         NSUnderlineStyleAttributeName:@3,
+                         NSUnderlineColorAttributeName:[UIColor yellowColor],
+                         NSObliquenessAttributeName:@0
+                         };
+ NSAttributedString *attStr31 = [[NSAttributedString alloc] initWithString:str31 attributes:dict31];
+ [muAttributedStr appendAttributedString:attStr31];
+
+ NSString *str32 = @&quot;看见了.....故乡的.......春天。\n&quot;;
+ NSDictionary *dict32 = @{
+                          NSBaselineOffsetAttributeName:@24,
+                          NSUnderlineStyleAttributeName:@2,
+                          NSUnderlineColorAttributeName:[UIColor greenColor],
+                          NSObliquenessAttributeName:@(-1),
+                          NSExpansionAttributeName:@(-0.5)
+                          };
+ NSAttributedString *attStr32 = [[NSAttributedString alloc] initWithString:str32 attributes:dict32];
+ [muAttributedStr appendAttributedString:attStr32];
+</code></pre><p>其中需要注意的是：<br>NSStrikethroughStyleAttributeName（删除线）、NSUnderlineStyleAttributeName的value（下划线）: 1~7单线,依次加粗  9~15:双线,依次加粗<br>NSObliquenessAttributeName（倾斜）：正值右倾,负值左倾<br> 运行效果如下：<br> <img src="http://p1.meituan.net/xgfe/9da9d0eeed5b545b73b8e7d14e2b3afe99240.jpg" width="300" height="300" alt=""></p>
+<p>图文混排的使用：<br>一、将图片和文字分别初始化成不同的NSAttributedString，然后拼接到NSMutableAttributedString，赋值到控件上。</p>
+<pre><code>NSString *str1= @&quot;刻骨铭心~霸王！明媚如风，轻盈似箭！啊~已经放弃了做个淑女~&quot;;
+NSString *str2= @&quot;净化森林，净化污秽，净化心灵，净化自己。风会带走你曾经存在过的证明。&quot;;
+
+NSMutableAttributedString *muAttributedStr = [[NSMutableAttributedString alloc] init];
+
+NSAttributedString *attStr = [[NSAttributedString alloc] initWithString:str1 attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16],
+                                                                                          NSForegroundColorAttributeName:[UIColor magentaColor]
+                                                                                          }];
+NSTextAttachment *attachment = [[NSTextAttachment alloc]init];
+attachment.image = [UIImage imageNamed:@&quot;yujiphoto&quot;];
+attachment.bounds = CGRectMake(0, 0, 110, 70);
+
+NSAttributedString *attStr1 = [NSAttributedString attributedStringWithAttachment:attachment];
+
+NSAttributedString *attStr2= [[NSAttributedString alloc] initWithString:str2 attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14],
+                                                                                          NSBackgroundColorAttributeName:[UIColor clearColor]}];
+
+ [muAttributedStr appendAttributedString:attStr];
+ [muAttributedStr appendAttributedString:attStr1];
+ [muAttributedStr appendAttributedString:attStr2];
+</code></pre><p>二、使用insertAttributedString将图片插入到文字中。</p>
+<pre><code>NSString *str3 = @&quot;一点疼痛能让偷窥者牢记我的魅力！不为所爱之人哭泣，只因从未离去。想和风比赛脚力吗？弱小，并非服从恐惧的理由！&quot;;
+NSMutableAttributedString *mustr = [[NSMutableAttributedString alloc] initWithString:str3];
+NSTextAttachment *attachMent1 = [[NSTextAttachment alloc] init];
+attachMent1.image = [UIImage imageNamed:@&quot;photo23&quot;];
+attachMent1.bounds = CGRectMake(0, 0, 110, 70);
+[mustr addAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:20],
+                         NSForegroundColorAttributeName:[UIColor greenColor]
+                         } range:NSMakeRange(0, 8)];
+NSAttributedString *att = [NSAttributedString attributedStringWithAttachment:attachMent1];
+[mustr insertAttributedString:att atIndex:6];
+[muAttributedStr appendAttributedString:mustr];
+使用
+self.showLa.attributedText = muAttributedStr;
+</code></pre><p> 运行效果如下：<br>  <img src="http://p0.meituan.net/xgfe/dccd36a6ac1a8845cbad513316355332110431.jpg" width="300" height="300" alt=""></p>
+<p>介绍了富文本的常用属性，并且介绍了一些常用的场景后，安利一个富文本第三方库—YYText（github的地址—<a href="https://github.com/ibireme/YYText）。详细的使用可以参考一下github上面的介绍。" target="_blank" rel="external">https://github.com/ibireme/YYText）。详细的使用可以参考一下github上面的介绍。</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本文主要分析了富文本常用的属性设置，平时工作过程经常遇到一些有特殊需求的label、UITextField、UITextView。一般情况下，大家都喜欢直接用多个label来实现其不同的属性，很多人忽略了label本身的富文本属性。本文针对富文本进行了详细的介绍。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="Sudaxi" scheme="http://xgfe.github.io/categories/Sudaxi/"/>
+    
+    
+      <category term="iOS" scheme="http://xgfe.github.io/tags/iOS/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>由一个表格需求引发的blog-DOM中的尺寸属性</title>
+    <link href="http://xgfe.github.io/2017/09/20/Young/DOM-size/"/>
+    <id>http://xgfe.github.io/2017/09/20/Young/DOM-size/</id>
+    <published>2017-09-20T08:37:00.000Z</published>
+    <updated>2017-09-27T09:59:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近数据平台有一个需求，页面滚动的时候，表格的表头悬停在页面顶部，实现的时候遇到了不少问题，也尝试了几种方案，下一篇blog会尝试分享一下，由于涉及到较多的DOM操作，尤其是各种尺寸位置属性，所以对这些尺寸属性的含义做了一些总结。</p>
+<a id="more"></a>
+<h2 id="偏移量相关属性"><a href="#偏移量相关属性" class="headerlink" title="偏移量相关属性"></a>偏移量相关属性</h2><p>偏移量相关属性包括偏移量尺寸和位置属性，其中偏移量尺寸指的是元素在屏幕上占用的所有可见空间，包括其内容区的空间，内边距，边框以及滚动条占用的空间（不包括外边距）。偏移量位置属性是一个相对的概念，其偏移量是参照最近的定位（display值非none或static）祖先元素计算的。以像素作为单位。</p>
+<ol>
+<li><p>偏移量尺寸</p>
+<ul>
+<li>offsetWidth:元素在水平方向占用的空间大小，包括元素内容区的宽度，左右内边距的宽度，垂直滚动条的宽度，左右边框的宽度。</li>
+<li>offsetHeight:元素在垂直方向占用的空间大小，包括元素内容区高度，上下内边距的高度，水平滚动条的高度，上下边框的高度。</li>
+</ul>
+</li>
+<li><p>偏移量位置</p>
+<ul>
+<li>offsetParent:返回被引用元素最近的定位过的祖先元素。如果没有定位过的祖先元素，则返回body。</li>
+<li>offsetTop:被引用元素上边框的外边缘与其offsetParent上边框的内边缘之间像素距离。</li>
+<li>offsetLeft:被引用元素左边框的外边缘与其offsetParent左边框的内边缘之间的像素距离。</li>
+</ul>
+</li>
+</ol>
+<p><strong>用法：</strong>通常，如果想要获取某个元素在页面上的偏移量，将这个元素的offsetLeft或offsetTop与其offsetParent的相同属性相加，递归的计算直到根元素，就可以得到一个比较准确的结果。需要注意上述属性都是只读的，每次访问都需要重新计算。</p>
+<h2 id="客户区尺寸"><a href="#客户区尺寸" class="headerlink" title="客户区尺寸"></a>客户区尺寸</h2><p>客户区尺寸只与元素自身所占区域大小有关，相关的属性如下。</p>
+<ul>
+<li>clientWidth:元素内容区宽度加上左右内边距的宽度。</li>
+<li>clientHeight:元素内容区高度加上上下内边距的高度。</li>
+<li>clientTop:元素上边框的宽度。</li>
+<li>clientLeft:元素左边框的宽度。</li>
+</ul>
+<p><strong>用法：</strong>最常见的用途之一是用来确定浏览器视口的尺寸，根据浏览器的支持情况，使用document.documentElement或者document.body的相应尺寸来获取视口宽高信息。</p>
+<h2 id="滚动元素相关属性"><a href="#滚动元素相关属性" class="headerlink" title="滚动元素相关属性"></a>滚动元素相关属性</h2><p>滚动元素是包含滚动条的元素，相关属性如下。</p>
+<ol>
+<li><p>滚动尺寸</p>
+<ul>
+<li>scrollWidth:元素内容的实际宽度（包含左右内边距），即在没有滚动条的情况下，元素内容的总宽度。</li>
+<li>scrollHeight:元素内容的实际高度（包含上下内边距），即在没有滚动条的情况下，元素内容的总高度。</li>
+</ul>
+</li>
+<li><p>滚动位置</p>
+<ul>
+<li>scrollTop:被隐藏在内容区域上方的像素数，这个属性和scrollLeft均是可配置的，可以通过设置这个属性的值来改变元素滚动的位置。</li>
+<li>scrollLeft:被隐藏在内容区域左侧的像素数。</li>
+</ul>
+</li>
+</ol>
+<p><strong>用法：</strong>滚动尺寸主要用来确定元素内容的实际大小，滚动位置既可以用来确定当前滚动的状态也可以设置滚动位置。一个很常见的使用场景就是判断页面的滚动情况，不同的浏览器的获取scrollTop方法不同，document.documentElement返回的是文档的根节点即<html>，document.body返回的是body，在chrome中，获取页面scrollTop只能通过document.body.scrollTop来获取，document.documentElement获取相同属性始终返回0，而在FF下（只测试了chrome和FF）正好相反。</html></p>
+<h2 id="无图无真相"><a href="#无图无真相" class="headerlink" title="无图无真相"></a>无图无真相</h2><p>作为一个斗图新人，没有图没有底气，所以虽然手残，我还是画了一个图，首先我们就假装图中那个灰色的东西是滚动条，然后看图对应上述属性吧~</p>
+<p><img src="http://p1.meituan.net/xgfe/447fe588baa4cd81ed6e3cd6fc38b55d85970.png" alt=""></p>
+<h2 id="事件event位置"><a href="#事件event位置" class="headerlink" title="事件event位置"></a>事件event位置</h2><p>对于页面中发生的事件，获取点击事件鼠标的位置信息在应用中很常见，以垂直位置为例，常用相关属性有三个：pageY, clientY, screenY。</p>
+<ul>
+<li>pageY:鼠标在页面上的文档坐标，以文档为参照，距离文档左上角的垂直像素距离，所以这个属性和页面是否滚动无关。</li>
+<li>clientY:以视口为参照，鼠标距离视口左上角的垂直像素距离。</li>
+<li>screenY:以浏览器为参照，鼠标距离浏览器左上角的垂直像素距离，包含工具栏之类。</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近数据平台有一个需求，页面滚动的时候，表格的表头悬停在页面顶部，实现的时候遇到了不少问题，也尝试了几种方案，下一篇blog会尝试分享一下，由于涉及到较多的DOM操作，尤其是各种尺寸位置属性，所以对这些尺寸属性的含义做了一些总结。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Young" scheme="http://xgfe.github.io/categories/Young/"/>
+    
+    
+      <category term="DOM" scheme="http://xgfe.github.io/tags/DOM/"/>
+    
+      <category term="跨浏览器属性" scheme="http://xgfe.github.io/tags/%E8%B7%A8%E6%B5%8F%E8%A7%88%E5%99%A8%E5%B1%9E%E6%80%A7/"/>
+    
+  </entry>
   
   <entry>
     <title>ConstraintLayout 采用代码方式布局用法简介</title>
@@ -227,7 +474,7 @@
     <link href="http://xgfe.github.io/2017/09/07/felix/html-parsing-and-resources-load/"/>
     <id>http://xgfe.github.io/2017/09/07/felix/html-parsing-and-resources-load/</id>
     <published>2017-09-07T03:00:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p>学习浏览器的内部工作原理将有助于您作出更明智的决策，并理解那些最佳开发实践的个中缘由。</p>
 <p>本文主要针对WebKit内核的浏览器。</p>
@@ -320,7 +567,7 @@
     <link href="http://xgfe.github.io/2017/09/07/huanglifen/html2image/"/>
     <id>http://xgfe.github.io/2017/09/07/huanglifen/html2image/</id>
     <published>2017-09-06T16:00:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p>如何将HTML保存成高清图片？本文带你一探究竟。<br><a id="more"></a></p>
 <h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>现在流行于朋友圈分享的一些活动页，经常会玩这样的一个功能：将诸如测试之类的结果页保存成图片分享至朋友圈，以此来吸引用户参与，提高活动的pv和uv。</p>
@@ -554,7 +801,7 @@ npm install
 <a id="more"></a>
 <h4 id="前菜之背景介绍"><a href="#前菜之背景介绍" class="headerlink" title="前菜之背景介绍"></a>前菜之背景介绍</h4><p>话说某天，楼主吃着火锅唱着歌，逛到了React的Performance Tools版块，心血来潮，放到了手上的项目里面玩了玩，看完后整个人都不太好了，数据如下(我一页屏幕都截不完……)：<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-oldPref.png?" alt="性能图"><br>但实际上我所执行的操作仅仅只是为颜色外观打了个分，如下所示：<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-coperation.png" alt="操作图"></p>
 <p>根据上面的统计数据，初略计算了下，一个打分操作render count为293。一个页面必填5个打分项，如此一来总共render count  &gt;= 1465，其中还排除了用户打分完毕后继续修改的情况。不用我说，大家也能看出这是一个相当不合理的数字。因为就理想状况而言，打分操作最多只影响当前的打分项，一个打分组件五颗星，其具体结构如下所示:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;View key=&#123;i&#125;&gt;</div><div class="line">      &lt;TouchableOpacity</div><div class="line">        style=&#123;&#123;marginTop: 5, marginRight: 5&#125;&#125;</div><div class="line">        onPress=&#123;() =&gt;&#123;......&#125;</div><div class="line">        &gt;</div><div class="line">        &lt;IconFont name="star" size=&#123;StyleSheet.r(22)&#125; color=&#123;color&#125;/&gt;</div><div class="line">      &lt;/TouchableOpacity&gt;</div><div class="line"> &lt;/View&gt;</div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;View key=&#123;i&#125;&gt;</div><div class="line">      <span class="xml"><span class="tag">&lt;<span class="name">TouchableOpacity</span></span></span></div><div class="line">        <span class="attr">style</span>=<span class="string">&#123;&#123;marginTop:</span> <span class="attr">5</span>, <span class="attr">marginRight:</span> <span class="attr">5</span>&#125;&#125;</div><div class="line">        <span class="attr">onPress</span>=<span class="string">&#123;()</span> =&gt;&#123;......&#125;</div><div class="line">        &gt;</div><div class="line">        <span class="tag">&lt;<span class="name">IconFont</span> <span class="attr">name</span>=<span class="string">"star"</span> <span class="attr">size</span>=<span class="string">&#123;StyleSheet.r(22)&#125;</span> <span class="attr">color</span>=<span class="string">&#123;color&#125;/</span>&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">TouchableOpacity</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">View</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>因此直接改变量为3*5=15是比较合理，再加上全局的Navar以及connect等操作，render count达到293也是绝对不合理且，通过分析，我们可以看到有很多数据根本没改变的组件也被重新渲染了的，这部分开销完全是不必要且有相当大的改进空间的。既然如此，我们来改进下吧~</p>
 <p>为了减少环境变量且便于修改与测试，我们基于种子项目来模拟当前的状况。种子项目在React Native官方项目基础上集成了Redux进行数据处理，除此之外还提供了一些基本的工具函数及路由封装。<br>我们构造了两个页面，点击第一个页面的button会跳转到第二个页面，在第二个页面会从服务器端获取数据，渲染成列表形式，除此之外在列表上方有一个button，它会记录点击次数并且展示出来。大概布局如下：<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-exampleLayout.png?imageView2/2/w/500/h/500/q/100|watermark/2/text/bHVsdXRpYQ==/font/5a6L5L2T/fontsize/240/fill/IzAwMDAwMA==/dissolve/20/gravity/SouthEast/dx/10/dy/10|imageslim" alt="demo图"></p>
 <p>既然是模拟前文的情况，那我们可以预测点击addCount button后，整个列表应该是被重新渲染了的，虽然他的数据实际上并没有变化，讲道理是不应该重新渲染的。实际结果如下图所示，的确和我们的预测一样，List下的Text render count是不必要的。<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-examplePref.png?" alt="demo性能图"></p>
@@ -696,8 +943,8 @@ npm install
 <ul>
 <li><p>函数的传递方式需要注意</p>
 <p>  如果每次render时都是重新声明的函数，则其对比会有问题，因为is()内部对函数的对比是基于ValueOf的，所以将下面的第一种方式改为第二种方式：</p>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;() =&gt; <span class="keyword">this</span>.addCount()&#125; style=&#123;Style.btnContainer&#125;&gt;</div><div class="line">     &lt;Text style=&#123;Style.btnWord&#125;&gt;addCount&lt;/Text&gt;</div><div class="line"> &lt;<span class="regexp">/TouchableOpacity&gt;</span></div></pre></td></tr></table></figure>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;<span class="keyword">this</span>.addCount&#125; style=&#123;Style.btnContainer&#125;&gt;</div><div class="line">      &lt;Text style=&#123;Style.btnWord&#125;&gt;addCount&lt;/Text&gt;</div><div class="line">  &lt;<span class="regexp">/TouchableOpacity&gt;</span></div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;() =&gt; <span class="keyword">this</span>.addCount()&#125; style=&#123;Style.btnContainer&#125;&gt;</div><div class="line">     <span class="xml"><span class="tag">&lt;<span class="name">Text</span> <span class="attr">style</span>=<span class="string">&#123;Style.btnWord&#125;</span>&gt;</span>addCount<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></span></div><div class="line"> &lt;<span class="regexp">/TouchableOpacity&gt;</span></div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;<span class="keyword">this</span>.addCount&#125; style=&#123;Style.btnContainer&#125;&gt;</div><div class="line">      <span class="xml"><span class="tag">&lt;<span class="name">Text</span> <span class="attr">style</span>=<span class="string">&#123;Style.btnWord&#125;</span>&gt;</span>addCount<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></span></div><div class="line">  &lt;<span class="regexp">/TouchableOpacity&gt;</span></div></pre></td></tr></table></figure>
 </li>
 </ul>
 <p>经过上面这些改造后，我们的demo文件Render count如下所示，很好，楼主又可以欢快的吃火锅啦：<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-after.png?" alt="优化之后"></p>
@@ -771,7 +1018,7 @@ npm install
 <ul>
 <li><p>以react举例下面两段代码完全一致：</p>
   <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> p1 = React.createElement(<span class="string">'p'</span>, <span class="literal">null</span>, <span class="string">'my test'</span>)</div><div class="line"><span class="keyword">var</span> root = React.createElement(<span class="string">'div'</span>, &#123; <span class="attr">className</span>: <span class="string">'root-div'</span> &#125;, p1);</div></pre></td></tr></table></figure>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> root = (</div><div class="line">	&lt;div className='root-div'&gt;</div><div class="line">		&lt;p&gt;my test&lt;/p&gt;</div><div class="line">	&lt;/div&gt;</div><div class="line">)</div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> root = (</div><div class="line">	<span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">className</span>=<span class="string">'root-div'</span>&gt;</span></span></div><div class="line">		<span class="tag">&lt;<span class="name">p</span>&gt;</span>my test<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">)</div></pre></td></tr></table></figure>
 </li>
 <li><p>JSX之后会被专门的解释器解释为JS(在打包阶段就完成了，因此不会有性能上的问题)再执行</p>
 </li>
@@ -782,10 +1029,10 @@ npm install
 <li><p>JSX语法</p>
 <ul>
 <li><p>在JSX中你可以使用{}来包裹JS表达式，下面以RN来举例</p>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;refundDetailData.return.returnPics &amp;&amp; &lt;View style=&#123;[Style.basicLayout, Style.image]&#125;&gt;</div><div class="line">   	&lt;Text style=&#123;[Style.textColor, Style.navTitle]&#125;&gt;图片信息:&lt;/Text&gt;</div><div class="line">   	&lt;ImageShow picUrls=&#123;refundDetailData.return.returnPics&#125;/&gt;</div><div class="line"> 	&lt;/View&gt;&#125;</div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;refundDetailData.return.returnPics &amp;&amp; <span class="xml"><span class="tag">&lt;<span class="name">View</span> <span class="attr">style</span>=<span class="string">&#123;[Style.basicLayout,</span> <span class="attr">Style.image</span>]&#125;&gt;</span></span></div><div class="line">   	<span class="tag">&lt;<span class="name">Text</span> <span class="attr">style</span>=<span class="string">&#123;[Style.textColor,</span> <span class="attr">Style.navTitle</span>]&#125;&gt;</span>图片信息:<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></div><div class="line">   	<span class="tag">&lt;<span class="name">ImageShow</span> <span class="attr">picUrls</span>=<span class="string">&#123;refundDetailData.return.returnPics&#125;/</span>&gt;</span></div><div class="line"> 	<span class="tag">&lt;/<span class="name">View</span>&gt;</span>&#125;</div></pre></td></tr></table></figure>
 </li>
 <li><p>JSX本身也是一种表达式，因此可以在if语句，for循环等各种场合中使用</p>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">dataList.map(<span class="function">(<span class="params">item, index</span>) =&gt;</span> (</div><div class="line">  &lt;TouchableHighlight key=&#123;index&#125;&gt;</div><div class="line">    &lt;View&gt;</div><div class="line">      &lt;Text&gt;&#123;item.contactName&#125;&lt;/Text&gt;</div><div class="line">      &lt;Text&gt;&#123;item.contactTel&#125;&lt;/Text&gt;</div><div class="line">    &lt;/View&gt;</div><div class="line">  &lt;/TouchableHighlight&gt;</div><div class="line">));</div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">dataList.map(<span class="function">(<span class="params">item, index</span>) =&gt;</span> (</div><div class="line">  <span class="xml"><span class="tag">&lt;<span class="name">TouchableHighlight</span> <span class="attr">key</span>=<span class="string">&#123;index&#125;</span>&gt;</span></span></div><div class="line">    <span class="tag">&lt;<span class="name">View</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">Text</span>&gt;</span>&#123;item.contactName&#125;<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">Text</span>&gt;</span>&#123;item.contactTel&#125;<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">View</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">TouchableHighlight</span>&gt;</span></div><div class="line">));</div></pre></td></tr></table></figure>
 </li>
 <li><p>JSX可以定义属性，一般每个组件都会接受一组属性(props)</p>
 <ul>
@@ -800,10 +1047,10 @@ npm install
 <li><p>JSX标签能够包含子元素就如HTML一样，而且其子元素也可以运用JS的语法进行构建</p>
 </li>
 <li><p>JSX中的注释就如JS类似，但是需要注意当在子元素中进行注释时，需要用{}将注释包裹起来</p>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;Nav&gt;</div><div class="line">   &#123;<span class="comment">/* child comment, put &#123;&#125; around */</span>&#125;</div><div class="line">   &lt;Person</div><div class="line">     <span class="comment">/* multi</span></div><div class="line">        line</div><div class="line">        comment */</div><div class="line">     name=&#123;<span class="built_in">window</span>.isLoggedIn ? <span class="built_in">window</span>.name : <span class="string">''</span>&#125; <span class="comment">// end of line comment</span></div><div class="line">   /&gt;</div><div class="line"> &lt;/Nav&gt;</div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;Nav&gt;</div><div class="line">   &#123;<span class="comment">/* child comment, put &#123;&#125; around */</span>&#125;</div><div class="line">   &lt;Person</div><div class="line">     <span class="comment">/* multi</span></div><div class="line">        line</div><div class="line">        comment */</div><div class="line">     name=&#123;<span class="built_in">window</span>.isLoggedIn ? <span class="built_in">window</span>.name : <span class="string">''</span>&#125; <span class="comment">// end of line comment</span></div><div class="line">   /&gt;</div><div class="line"> <span class="xml"><span class="tag">&lt;/<span class="name">Nav</span>&gt;</span></span></div></pre></td></tr></table></figure>
 </li>
 <li><p>JSX中的事件处理是直接绑定在组件上的，下面以RN为例</p>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableHighlight style=&#123;Style.tabBtn&#125; underlayColor=&#123;Colors.yellowLighten&#125;onPress=&#123;<span class="keyword">this</span>.goToReturnList&#125;&gt;</div><div class="line">  &lt;Text style=&#123;Style.tabBtnText&#125;&gt;退货单&lt;/Text&gt;</div><div class="line">&lt;<span class="regexp">/TouchableHighlight&gt;</span></div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableHighlight style=&#123;Style.tabBtn&#125; underlayColor=&#123;Colors.yellowLighten&#125;onPress=&#123;<span class="keyword">this</span>.goToReturnList&#125;&gt;</div><div class="line">  <span class="xml"><span class="tag">&lt;<span class="name">Text</span> <span class="attr">style</span>=<span class="string">&#123;Style.tabBtnText&#125;</span>&gt;</span>退货单<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></span></div><div class="line">&lt;<span class="regexp">/TouchableHighlight&gt;</span></div></pre></td></tr></table></figure>
 <ul>
 <li><p>相比于使用下面这种方式，界面元素和业务逻辑的耦合会更加明显</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$(<span class="string">'#my-button'</span>).on(<span class="string">'click'</span>, <span class="keyword">this</span>.checkAndSubmit.bind(<span class="keyword">this</span>));</div></pre></td></tr></table></figure>
@@ -874,7 +1121,7 @@ npm install
 <ul>
 <li>contentContainerStyle：传入的样式属性，其作为样式会应用在包裹所有子元素的内容元素容器上</li>
 <li><p>horizontal：确定横向还是纵向滚动，默认为false，即默认纵向滚动</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;ScrollView style=&#123;styles.listTab&#125; horizontal&gt; </div><div class="line">      &#123;<span class="keyword">this</span>.level.map(<span class="function">(<span class="params">item, index</span>) =&gt;</span> &#123;</div><div class="line">        <span class="keyword">return</span> (</div><div class="line">          &lt;View style=&#123;styles.tabTextContainer&#125; key=&#123;index&#125;&gt;</div><div class="line">            &lt;Text&gt;&#123;item&#125;&lt;/Text&gt;</div><div class="line">          &lt;/View&gt;</div><div class="line">          )</div><div class="line">      &#125;)&#125;         </div><div class="line">     &lt;<span class="regexp">/ScrollView&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;ScrollView style=&#123;styles.listTab&#125; horizontal&gt; </div><div class="line">      &#123;<span class="keyword">this</span>.level.map(<span class="function">(<span class="params">item, index</span>) =&gt;</span> &#123;</div><div class="line">        <span class="keyword">return</span> (</div><div class="line">          <span class="xml"><span class="tag">&lt;<span class="name">View</span> <span class="attr">style</span>=<span class="string">&#123;styles.tabTextContainer&#125;</span> <span class="attr">key</span>=<span class="string">&#123;index&#125;</span>&gt;</span></span></div><div class="line">            <span class="tag">&lt;<span class="name">Text</span>&gt;</span>&#123;item&#125;<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></div><div class="line">          <span class="tag">&lt;/<span class="name">View</span>&gt;</span></div><div class="line">          )</div><div class="line">      &#125;)&#125;         </div><div class="line">     &lt;<span class="regexp">/ScrollView&gt;</span></div></pre></td></tr></table></figure>
 </li>
 <li><p>keyboardDismissMode：决定当拖拽时，键盘是否消失</p>
 <ul>
@@ -994,7 +1241,7 @@ npm install
     <link href="http://xgfe.github.io/2017/06/26/zero/OKIO%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     <id>http://xgfe.github.io/2017/06/26/zero/OKIO源码分析/</id>
     <published>2017-06-25T16:00:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文主要分析了OKIO源码中用到的Timeout，Buffer和设计模式。</p>
 <a id="more"></a>
@@ -1043,7 +1290,7 @@ npm install
     <link href="http://xgfe.github.io/2017/06/26/zero/Looper%E5%92%8CHandler%E5%92%8CHandlerThread/"/>
     <id>http://xgfe.github.io/2017/06/26/zero/Looper和Handler和HandlerThread/</id>
     <published>2017-06-25T16:00:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文主要分析了Looper，Handler和HandlerThread的主要源码部分。</p>
 <a id="more"></a>
@@ -1228,7 +1475,7 @@ npm install
 <p>像素无关</p>
 <ul>
 <li><p>React Native中的尺寸都是无单位的，表示的是与设备像素密度无关的逻辑像素点</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;View style=&#123; &#123;<span class="attr">width</span>:<span class="number">100</span>,<span class="attr">height</span>:<span class="number">100</span>,<span class="attr">margin</span>:<span class="number">40</span>,<span class="attr">backgroundColor</span>:<span class="string">'gray'</span>&#125;&#125;&gt;</div><div class="line">      &lt;Text style=&#123; &#123;fontSize:16,margin:20&#125;&#125;&gt;尺寸&lt;/Text&gt;</div><div class="line">&lt;<span class="regexp">/View&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;View style=&#123; &#123;<span class="attr">width</span>:<span class="number">100</span>,<span class="attr">height</span>:<span class="number">100</span>,<span class="attr">margin</span>:<span class="number">40</span>,<span class="attr">backgroundColor</span>:<span class="string">'gray'</span>&#125;&#125;&gt;</div><div class="line">      <span class="xml"><span class="tag">&lt;<span class="name">Text</span> <span class="attr">style</span>=<span class="string">&#123;</span> &#123;<span class="attr">fontSize:16</span>,<span class="attr">margin:20</span>&#125;&#125;&gt;</span>尺寸<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></span></div><div class="line">&lt;<span class="regexp">/View&gt;</span></div></pre></td></tr></table></figure>
 </li>
 <li><p>上面的例子，运行在Android上时，View的长和宽被解释成100dp 其单位是dp，字体被解释成16sp 其单位是sp，运行在iOS上时尺寸单位被解释称了pt，这些单位确保了布局在任何不同dpi的手机屏幕上显示不会发生改变。如果希望获取实际的像素尺寸，则需要使用尺寸 * pixelRatio。<a href="https://facebook.github.io/react-native/docs/pixelratio.html" target="_blank" rel="external">pixelRatio使用</a></p>
 </li>
@@ -1341,7 +1588,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/27/shsoul/SDWebImage%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/"/>
     <id>http://xgfe.github.io/2017/05/27/shsoul/SDWebImage源码解读/</id>
     <published>2017-05-27T11:48:29.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>SDWebImage库是iOS应用中常用的一个图片处理库，包括图片的下载和缓存等。非常好用。本文对其源码做了分析和总结。</p>
 <a id="more"></a>
@@ -1452,7 +1699,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/24/LexHuang/Inline-Caches/"/>
     <id>http://xgfe.github.io/2017/05/24/LexHuang/Inline-Caches/</id>
     <published>2017-05-24T03:30:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文来自Vyacheslav Egorov的<a href="http://mrale.ph/blog/2012/06/03/explaining-js-vms-in-js-inline-caches.html" target="_blank" rel="external">Explaining JavaScript VMs in JavaScript - Inline Caches</a>，其中的术语、代码请以原文为准。<br><a id="more"></a></p>
 <p>我知道如何实现用语言（或者语言的子集）来实现运行该语言虚拟机。如果我在学校或者有更多的时间我肯定会用JavaScript实现一个JavaScript虚拟机。实际上这并不会变成一个独一无二的JavaScript项目，因为蒙特利尔大学的人所造的<a href="https://github.com/Tachyon-Team/Tachyon/tree/master/source" target="_blank" rel="external">Tachyon</a>已经在某种程度上达到了同样的目的，但是我也有些我自己想要追求的点子。</p>
@@ -1533,7 +1780,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/15/jakii/cocos2d-x%20introduction/"/>
     <id>http://xgfe.github.io/2017/05/15/jakii/cocos2d-x introduction/</id>
     <published>2017-05-15T08:30:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p><img src="http://oprp8vydn.bkt.clouddn.com/2017-05-15-14948390188781.jpg" alt=""></p>
 <p>cocos2d-x是一个广泛流行的2D跨平台游戏引擎。采用c++作为开发语言。而cocos2d-Js是cocos2d-x采用脚本绑定技术实现的采用JavaScript语言作为开发语言的版本。</p>
@@ -1654,7 +1901,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/04/y8n/understand-virtual-dom/"/>
     <id>http://xgfe.github.io/2017/05/04/y8n/understand-virtual-dom/</id>
     <published>2017-05-04T04:30:13.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>使用过React的同学对于Virtual DOM并不陌生，作为React的重要核心概念，Virtual DOM凭借其高效的diff算法，让我们不用关心应用的性能问题，毫无顾忌地修改各种数据状态。在实际的开发中，我们并不需要关注Virtual DOM在一个框架中是如何运行的，但是理解Virtual DOM的实现原理却是非常有必要的，同时也有助于我们更加深入React。<br><a id="more"></a></p>
 <h2 id="一、前端应用状态管理"><a href="#一、前端应用状态管理" class="headerlink" title="一、前端应用状态管理"></a>一、前端应用状态管理</h2><p>在日益复杂的前端应用中，状态管理是一个经常被提及的话题，从早期的刀耕火种时代到jQuery，再到现在流行的MVVM时代，状态管理的形式发生了翻天覆地的变化，我们再也不用维护茫茫多的事件回调、监听来更新视图，转而使用使用双向数据绑定，只需要维护相应的数据状态，就可以自动更新视图，极大提高开发效率。</p>
@@ -1734,7 +1981,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/03/LexHuang/web-worker/"/>
     <id>http://xgfe.github.io/2017/05/03/LexHuang/web-worker/</id>
     <published>2017-05-03T03:30:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p><img src="http://p0.meituan.net/kuailv/678b764c4d0bff4629f20e748357481c29564.jpg" alt="" title="web worker"><br>Web Workers 是一种不在页面线程而是在后台线程中执行脚本的技术。Web Workers 的优点在于可以将计算密集型和I/O密集型的操作放在一个单独的后台线程中执行，进而使得主线程（通常是UI线程）能够不被阻塞，也不会被减缓。</p>
 <p>本博客主要内容分为七部分：</p>
@@ -2101,7 +2348,7 @@ responsible event loop:不会被使用该event loop的环境立刻回收的event
     <link href="http://xgfe.github.io/2017/05/03/zhouxiong/Thrift/"/>
     <id>http://xgfe.github.io/2017/05/03/zhouxiong/Thrift/</id>
     <published>2017-05-02T16:00:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<h2 id="Thrift"><a href="#Thrift" class="headerlink" title="Thrift"></a>Thrift</h2><p>Thrift是一个跨语言的远程调用框架(RPC)，它允许你根据IDL规则定义数据类型和服务接口，然后通过Thrift编译器生成跨语言的client和server端，目前支持市面上所有的主流语言。</p>
 <a id="more"></a>
@@ -2348,7 +2595,7 @@ responsible event loop:不会被使用该event loop的环境立刻回收的event
     <link href="http://xgfe.github.io/2017/04/21/shsoul/router/"/>
     <id>http://xgfe.github.io/2017/04/21/shsoul/router/</id>
     <published>2017-04-21T04:10:21.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>本文主要是提供一套iOS-router的解决方案。</p>
 <a id="more"></a>
@@ -2418,7 +2665,7 @@ responsible event loop:不会被使用该event loop的环境立刻回收的event
     <link href="http://xgfe.github.io/2017/03/23/lrdcq/ios-crash-catch-and-analyze/"/>
     <id>http://xgfe.github.io/2017/03/23/lrdcq/ios-crash-catch-and-analyze/</id>
     <published>2017-03-23T04:48:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p>在iOS应用开发和线上运行的过程中，我们总会被反馈到各种各样的崩溃。很多崩溃通过case的描述，就能很快的重现并得到修复，但是更多的崩溃也许这一辈子就发生这么一次，也许我们永远不知道它什么时候再会出现。</p>
 <p>同时，就算我们捕获到一个Crash栈，由于版本环境等种种原因，或者发生崩溃的代码我们就无法得到它详细的源码，我们往往会对着一片全是程序指令偏移量的Crash栈一脸蒙蔽。<br>基于以上事实，我们需要从Crash栈的捕获和分析这两个角度进行深入的了解。</p>
@@ -2542,7 +2789,7 @@ responsible event loop:不会被使用该event loop的环境立刻回收的event
     <link href="http://xgfe.github.io/2017/03/16/TinySymphony/electronic-apps/"/>
     <id>http://xgfe.github.io/2017/03/16/TinySymphony/electronic-apps/</id>
     <published>2017-03-16T03:25:57.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
+    <updated>2017-09-12T08:43:59.000Z</updated>
     
     <content type="html"><![CDATA[<p>在国内<code>All in mobile</code>的风气下谈论桌面客户端开发似乎是个很非主流的行为，但是作为JavaScript在桌面端伸出的利爪，<code>Electron</code>不仅仅是快速开发跨平台桌面客户端的一个技术选型，也有着其独特的象征意义~</p>
 <p>本文主要介绍<code>Electron</code>的应用结构、开发方式以及优缺点。在重温Electron开发的过程中写了个山寨的Mac版网易云音乐，这是<a href="https://github.com/Tinysymphony/electronic-netease-music" target="_blank" rel="external">demo地址</a></p>
@@ -2604,214 +2851,6 @@ responsible event loop:不会被使用该event loop的环境立刻回收的event
       <category term="electron" scheme="http://xgfe.github.io/tags/electron/"/>
     
       <category term="atom" scheme="http://xgfe.github.io/tags/atom/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>ActivityRouter</title>
-    <link href="http://xgfe.github.io/2017/03/03/wangweitao/AliActivityRouter/"/>
-    <id>http://xgfe.github.io/2017/03/03/wangweitao/AliActivityRouter/</id>
-    <published>2017-03-02T16:00:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>android通过在intent中指定目标类名和参数实现界面之间的跳转。这种写法在activity数量少、跳转简单、开发人员较少时效果好。</p>
-<p> 如果遇到activity数量较多、跳转复杂、多人协作开发、长期的修改的情况，则可以通过activityRouter来解耦合、管理跳转逻辑等。</p>
-<a id="more"></a>
-<h2 id="AcitivtyRouter的主要优势"><a href="#AcitivtyRouter的主要优势" class="headerlink" title="AcitivtyRouter的主要优势"></a>AcitivtyRouter的主要优势</h2><p> ActivityRouter的最大优势在于项目中存在大量的activity、跳转关系较复杂，且后续需求变动频繁、开发人员较多或流动性大的时候，能非常方便的进行维护和开发。</p>
-<h3 id="使用原生跳转"><a href="#使用原生跳转" class="headerlink" title="使用原生跳转"></a>使用原生跳转</h3><p> 假设需要做一个包含商品列表、购物车、用户中心、商品详情、登录、订单列表、订单详情等界面的demo，跳转关系如下图所示。<br> <img src="https://p0.meituan.net/dpnewvc/10dbcf812dadbfc530586dab3e9bfeeb582755.png" alt="1. 使用原生跳转"><br> 如果按照原生的跳转方案，必须在每个跳转点使用一次startActivity。如果某些界面或服务需要先登录才能访问，则需要在跳转时添加相应的判断，如此就形成了图中的跳转情况。</p>
-<p> 一种简便的方法是在此基础上对跳转进行一些封装，这样只要维护几个静态的跳转类即可。随着参数的不同和改变、需求的变化，这种做法也会变的更加复杂。</p>
-<h3 id="使用ActivityRouter管理跳转"><a href="#使用ActivityRouter管理跳转" class="headerlink" title="使用ActivityRouter管理跳转"></a>使用ActivityRouter管理跳转</h3><p> 如果使用ActivityRouter来管理这些跳转会简便的多。所有的打开界面以及请求服务都通过ActivityRouter来完成。ActivityRouter中添加某一类操作的拦截即可完成。跳转图如下所示。</p>
-<p> <img src="https://p0.meituan.net/dpnewvc/2e3998e6e62a8147fc6d286f7aec34c0306557.png" alt="2. 使用ActivityRouter管理跳转"></p>
-<h3 id="ActivityRouter在版本迭代和维护中的优势"><a href="#ActivityRouter在版本迭代和维护中的优势" class="headerlink" title="ActivityRouter在版本迭代和维护中的优势"></a>ActivityRouter在版本迭代和维护中的优势</h3><p> 假设在原先的基础上需要添加一个活动页面，该页面有很多跳转其他页面的功能。如下图所示，有多少新的入口就需要添加多少个跳转的判断或者调用。<br> <img src="https://p0.meituan.net/dpnewvc/1e60eef57c66b8b50239dd7261613470662661.png" alt="3. 添加界面后的原生跳转"></p>
-<p> 如果是采用ActivityRouter的来管理这些路由，那么只需要调用ActivityRouter的接口即可，而拦截的逻辑根本不需要变动。<br> <img src="https://p1.meituan.net/dpnewvc/25ad81ab29548af2a57bef4a30970a4f325124.png" alt="4. 添加界面后的ActivityRouter跳转"></p>
-<h2 id="已有的开源activityRouter"><a href="#已有的开源activityRouter" class="headerlink" title="已有的开源activityRouter"></a>已有的开源activityRouter</h2><ul>
-<li><p><a href="https://github.com/mzule/ActivityRouter" target="_blank" rel="external">mzuleActivityRouter</a></p>
-<p>比较早的activityRouter,功能也比较健全，但是api设计不够友好，使用apt编译。</p>
-</li>
-<li><p><a href="https://github.com/alibaba/ARouter" target="_blank" rel="external">ARouter</a></p>
-<p>最近阿里出的一个activityRouter，可以同时支持apt和android annotation编译，api比较简单。</p>
-</li>
-<li><p><a href="https://github.com/campusappcn/AndRouter" target="_blank" rel="external">AndRouter</a></p>
-<p>apt编译，api设计有点反人类。</p>
-</li>
-<li><p><a href="https://github.com/chenenyu/Router" target="_blank" rel="external">chenenyuRouter</a></p>
-<p>android annotation编译，api比较简单，目前没有稳定版本。</p>
-</li>
-</ul>
-<h2 id="ARouter的使用"><a href="#ARouter的使用" class="headerlink" title="ARouter的使用"></a>ARouter的使用</h2><p> 本文例子使用的是ARouter。它的api简单有效，同时支持apt和android annotation的编译，能够兼容旧的项目。</p>
-<h3 id="gradle配置"><a href="#gradle配置" class="headerlink" title="gradle配置"></a>gradle配置</h3><p> 使用apt编译的gradle配置：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//项目的gradle配置</span></div><div class="line"><span class="keyword">buildscript</span> &#123;</div><div class="line">    <span class="keyword">repositories</span> &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">dependencies</span> &#123;</div><div class="line">        <span class="keyword">classpath</span> <span class="string">'com.neenbedankt.gradle.plugins:android-apt:1.8'</span></div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//模块的gradle配置</span></div><div class="line">apply plugin: <span class="string">'com.neenbedankt.android-apt'</span></div><div class="line"></div><div class="line">apt &#123;</div><div class="line">    arguments &#123;</div><div class="line">        moduleName <span class="keyword">project</span>.getName();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">dependencies</span> &#123;</div><div class="line">	<span class="keyword">compile</span> <span class="string">"com.alibaba:arouter-api:1.0.6"</span></div><div class="line">	<span class="keyword">compile</span> <span class="string">"com.alibaba:arouter-annotation:1.0.1"</span></div><div class="line">	apt <span class="string">"com.alibaba:arouter-compiler:1.0.2"</span></div><div class="line">｝</div></pre></td></tr></table></figure>
-<p> 使用android annotation编译：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">//在模块gradle中配置</span></div><div class="line">android &#123;</div><div class="line">	defaultConfig &#123;</div><div class="line">		...</div><div class="line">		javaCompileOptions &#123;</div><div class="line">			annotationProcessorOptions &#123;</div><div class="line">				arguments = [ moduleName : <span class="keyword">project</span>.getName() ]</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">dependencies</span> &#123;</div><div class="line">	<span class="keyword">compile</span> <span class="string">"com.alibaba:arouter-api:1.0.6"</span></div><div class="line">	<span class="keyword">compile</span> <span class="string">"com.alibaba:arouter-annotation:1.0.1"</span></div><div class="line">	annotationProcessor <span class="string">"com.alibaba:arouter-compiler:1.0.2"</span></div><div class="line">｝</div></pre></td></tr></table></figure>
-<p> <strong>注意:</strong></p>
-<ul>
-<li>arouter-api &gt;= 1.0.6      </li>
-<li>arouter-compiler &gt;= 1.0.2</li>
-<li>arouter-annotation &gt;= 1.0.1 </li>
-</ul>
-<p>低于上述要求版本会导致注入功能不能正常使用，不便于跳转时参数的传递。</p>
-<h3 id="初始化activityRouter"><a href="#初始化activityRouter" class="headerlink" title="初始化activityRouter"></a>初始化activityRouter</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate();</div><div class="line">        <span class="comment">//初始化路由</span></div><div class="line">        ARouter.init(<span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>使用之前必须要调用ARouter.init()方法，推荐在application中调用。</p>
-<h3 id="标注activity，注解参数"><a href="#标注activity，注解参数" class="headerlink" title="标注activity，注解参数"></a>标注activity，注解参数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Route</span>(path = <span class="string">"/mall/home"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Home</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line">	</div><div class="line">	<span class="meta">@Autowired</span>(name = <span class="string">"model"</span>)</div><div class="line">    Integer model = GOODS_LIST;</div><div class="line"></div><div class="line">	<span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        ARouter.getInstance().inject(<span class="keyword">this</span>);</div><div class="line">        </div><div class="line">        <span class="comment">// ...</span></div><div class="line">    &#125;</div><div class="line">    </div><div class="line">   	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> GOODS_LIST = <span class="number">101</span>;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> SHOPPING_CART = <span class="number">102</span>;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> USERS = <span class="number">103</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p> <strong>注意:</strong></p>
-<ul>
-<li>标注activity时，path至少包含两级目录。如/mall/home,只有/home是出错。</li>
-<li><p>注解@Autowired的name参数是通过url跳转时对应的参数名称。如:通过<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">url(http://KMall/mall/home?model=101)</div></pre></td></tr></table></figure></p>
-<p>来启动activity时，想要注入model的值就需要设置@Autowired(name = “model”)</p>
-</li>
-<li>使用@Autowired注解要记得ARouter.getInstance().inject(this)注解。</li>
-</ul>
-<h3 id="activity间路由跳转"><a href="#activity间路由跳转" class="headerlink" title="activity间路由跳转"></a>activity间路由跳转</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">ARouter.getInstance()</div><div class="line">	.build(<span class="string">"/mall/home"</span>)</div><div class="line">	.withInt(<span class="string">"model"</span>, Home.GOODS_LIST)</div><div class="line">	.navigation()</div><div class="line"></div><div class="line"><span class="comment">//如果需要有回调的话可以在callback中添加操作</span></div><div class="line">ARouter.getInstance()</div><div class="line">	.build(<span class="string">"/mall/home"</span>)</div><div class="line">	.withInt(<span class="string">"model"</span>, Home.GOODS_LIST)</div><div class="line">	.navigation(<span class="keyword">this</span>, <span class="keyword">new</span> NavigationCallback()&#123;</div><div class="line">		<span class="meta">@Override</span></div><div class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFound</span><span class="params">(Postcard postcard)</span> </span>&#123;</div><div class="line">			<span class="comment">// ...</span></div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="meta">@Override</span></div><div class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLost</span><span class="params">(Postcard postcard)</span> </span>&#123;</div><div class="line">			<span class="comment">// ...</span></div><div class="line">		&#125;</div><div class="line">	&#125;);</div></pre></td></tr></table></figure>
-<p> <strong>注意：</strong></p>
-<p>  调用跳转语句前要确保ARouter已经被初始化，否则会crash.</p>
-<h3 id="接受从浏览器或者webview的跳转"><a href="#接受从浏览器或者webview的跳转" class="headerlink" title="接受从浏览器或者webview的跳转"></a>接受从浏览器或者webview的跳转</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 申明一个activity接受浏览器或者webview的跳转 --&gt;</div><div class="line">&lt;activity android:name=&quot;.SchemeActivity&quot;&gt;</div><div class="line">	&lt;intent-filter&gt;</div><div class="line">		&lt;action android:name=&quot;android.intent.action.VIEW&quot;/&gt;</div><div class="line">		&lt;category android:name=&quot;android.intent.category.DEFAULT&quot;/&gt;</div><div class="line">		&lt;category android:name=&quot;android.intent.category.BROWSABLE&quot;/&gt;</div><div class="line">		&lt;data android:host=&quot;KMall&quot; android:scheme=&quot;sankuai&quot;/&gt;</div><div class="line">	&lt;/intent-filter&gt;</div><div class="line"></div><div class="line">	&lt;intent-filter&gt;</div><div class="line">		&lt;action android:name=&quot;android.intent.action.VIEW&quot;/&gt;</div><div class="line">		&lt;category android:name=&quot;android.intent.category.DEFAULT&quot;/&gt;</div><div class="line">		&lt;category android:name=&quot;android.intent.category.BROWSABLE&quot;/&gt;</div><div class="line">		&lt;data android:host=&quot;KMall&quot; android:scheme=&quot;http&quot;/&gt;</div><div class="line">		&lt;data android:host=&quot;KMall&quot; android:scheme=&quot;https&quot;/&gt;</div><div class="line">	&lt;/intent-filter&gt;</div><div class="line">&lt;/activity&gt;</div></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//接受到请求后用ARouter进行应用内跳转</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SchemeActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">		<span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">		<span class="keyword">final</span> Uri uri = getIntent().getData();</div><div class="line"></div><div class="line">		ARouter.getInstance().build(uri).navigation(<span class="keyword">this</span>, <span class="keyword">new</span> NavigationCallback() &#123;</div><div class="line">			<span class="meta">@Override</span></div><div class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFound</span><span class="params">(Postcard postcard)</span> </span>&#123;</div><div class="line">				finish();</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			<span class="meta">@Override</span></div><div class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLost</span><span class="params">(Postcard postcard)</span> </span>&#123;</div><div class="line">				finish();</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="路由跳转拦截器"><a href="#路由跳转拦截器" class="headerlink" title="路由跳转拦截器"></a>路由跳转拦截器</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Interceptor</span>(priority = <span class="number">1</span>, name = <span class="string">"login interceptor"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LoginInterceptor</span> <span class="keyword">implements</span> <span class="title">IInterceptor</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> Context context = <span class="keyword">null</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(Postcard postcard, InterceptorCallback callback)</span> </span>&#123;</div><div class="line">        String path = postcard.getPath();</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (context.getString(routerPathOrderList).equals(path)) &#123;</div><div class="line">            <span class="keyword">if</span> (Config.isLogin) &#123;</div><div class="line">                callback.onContinue(postcard);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                unLoginNotify();</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (context.getString(routerPathOrderDetail).equals(path)) &#123;</div><div class="line">            <span class="keyword">if</span> (Config.isLogin) &#123;</div><div class="line">                <span class="keyword">if</span> (postcard.getExtras().getLong(<span class="string">"detailId"</span>) == <span class="number">0</span>) &#123;</div><div class="line">                    showADialog(<span class="string">"orderId不能为空或0!"</span>, <span class="string">"确定"</span>);</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    callback.onContinue(postcard);</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                unLoginNotify();</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (context.getString(routerPathGoodsDetail).equals(path)) &#123;</div><div class="line">            <span class="keyword">if</span> (Config.isLogin) &#123;</div><div class="line">                <span class="keyword">if</span> (postcard.getExtras().getLong(<span class="string">"csuId"</span>) == <span class="number">0</span>) &#123;</div><div class="line">                    showADialog(<span class="string">"csuId不能为空或0"</span>, <span class="string">"确定"</span>);</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    callback.onContinue(postcard);</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                unLoginNotify();</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (context.getString(routerPathHome).equals(path)</div><div class="line">                &amp;&amp; postcard.getExtras().getInt(<span class="string">"model"</span>) != Home.GOODS_LIST) &#123;</div><div class="line">            <span class="keyword">if</span> (Config.isLogin) &#123;</div><div class="line">                callback.onContinue(postcard);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                unLoginNotify();</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            callback.onContinue(postcard);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(Context context)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.context = context;</div><div class="line">        ARouter.getInstance().inject(<span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">unLoginNotify</span><span class="params">()</span> </span>&#123;</div><div class="line">        showADialog(<span class="string">"你需要先登录!"</span>, <span class="string">"确定"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">showADialog</span><span class="params">(String message, String action)</span> </span>&#123;</div><div class="line">        ARouter.getInstance().build(<span class="string">"/mall/ADialog"</span>).withString(<span class="string">"message"</span>, message).withString(<span class="string">"action"</span>, action)</div><div class="line">                .navigation();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p> <strong>注意：</strong></p>
-<ul>
-<li>注解@Interceptor的priority表示优先级，拦截器按照优先级顺序依次执行，name属性只是在生成java doc的过程中有用。</li>
-<li>在拦截操作process中，如果继续跳转需要调用callback.onContinue()，如果遇到错误可以使用callback.onInterrupt()中断所有的路由。</li>
-<li>拦截器中一定要保证不需要被处理的路径能够通过callback.onContinue()继续执行下去。</li>
-<li>拦截器中不应有耗时操作，积压大量的请求会crash.</li>
-</ul>
-<h3 id="注入服务"><a href="#注入服务" class="headerlink" title="注入服务"></a>注入服务</h3><p> 服务就是一个公用的类，没有界面，可以通过ARouter来调用。可以用来做一些依赖注入，省略掉不少代码。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//申明服务的接口</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CustomToast</span> <span class="keyword">extends</span> <span class="title">IProvider</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">showDefaultStyleToast</span><span class="params">(String content)</span></span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//实现服务</span></div><div class="line"><span class="meta">@Route</span>(path = <span class="string">"/mall/utils/toast/normal"</span>, name = <span class="string">"自定义样式Toast"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NormalToast</span> <span class="keyword">implements</span> <span class="title">CustomToast</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> Context context = <span class="keyword">null</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">showDefaultStyleToast</span><span class="params">(String content)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (context != <span class="keyword">null</span>) &#123;</div><div class="line">            Toast.makeText(context, content, Toast.LENGTH_LONG).show();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(Context context)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.context = context;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//使用服务</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line">    <span class="meta">@Autowired</span>(name = <span class="string">"/mall/utils/toast/normal"</span>)</div><div class="line">    CustomToast customToast;</div><div class="line">    </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">				<span class="comment">//注入</span></div><div class="line">        ARouter.getInstance().inject(<span class="keyword">this</span>);</div><div class="line">        </div><div class="line">        <span class="comment">// ...</span></div><div class="line">		｝</div><div class="line">｝</div></pre></td></tr></table></figure>
-<p> <strong>注意：</strong></p>
-<ul>
-<li>接口一定要继承IProvider，否则编译不通过。而且错误信息提示不够准确，难以定位。</li>
-<li>如果只有一个服务接口的实现，那么利用@Autowired(name = “/mall/utils/toast/normal”)时可以不添加name属性。如果服务接口不止一个实现类，则需要name属性来区分。</li>
-<li>除了利用@Autowired来注解外，也可以通过(CustomToast)ARouter.getInstance().build(“/mall/utils/toast/normal”).navigation()来调用。</li>
-</ul>
-<h3 id="demo地址"><a href="#demo地址" class="headerlink" title="demo地址"></a>demo地址</h3><p> 本文的demo地址：<a href="https://github.com/thedevilking/demoCode/tree/develop/Demo_ActivityRouter" target="_blank" rel="external">demo</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h2&gt;&lt;p&gt;android通过在intent中指定目标类名和参数实现界面之间的跳转。这种写法在activity数量少、跳转简单、开发人员较少时效果好。&lt;/p&gt;
-&lt;p&gt; 如果遇到activity数量较多、跳转复杂、多人协作开发、长期的修改的情况，则可以通过activityRouter来解耦合、管理跳转逻辑等。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="wangweitao" scheme="http://xgfe.github.io/categories/wangweitao/"/>
-    
-    
-      <category term="Andorid" scheme="http://xgfe.github.io/tags/Andorid/"/>
-    
-      <category term="Activity Router" scheme="http://xgfe.github.io/tags/Activity-Router/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Vue2.0+Vue-resource+Express搭建简书网站服务端</title>
-    <link href="http://xgfe.github.io/2017/03/02/zhouxiong/Vue2.0+Vue-resource+Express-Server/"/>
-    <id>http://xgfe.github.io/2017/03/02/zhouxiong/Vue2.0+Vue-resource+Express-Server/</id>
-    <published>2017-03-01T16:00:00.000Z</published>
-    <updated>2017-09-12T08:00:08.000Z</updated>
-    
-    <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>继上一篇文章<a href="http://xgfe.github.io/2016/12/22/zhouxiong/Vue2.0+Vue-router2.0+Vuex2.0/">Vue2.0+Vue-router2.0+Vuex2.0搭建简书</a>，该文章主要讲述简书网站的前端搭建过程。本篇文章将重点讲述简书网站的服务端搭建，服务端主要通过Express启动一个本地server处理请求，将数据保存至数据库中。</p>
-<a id="more"></a>
-<p><strong>注意：本篇文章只介绍了比较重要的几个文件的内容，有些文件内容类似就没有拿出来讲解。所以代码并不是全部的，所以按照本文的内容并不能完全搭建起一个网站，想要全部的代码可以从下面的github仓库中获取</strong></p>
-<p>github地址：<a href="https://github.com/zhouxiongking/vue2.0-vuex2.0-demo-jianshu" target="_blank" rel="external">https://github.com/zhouxiongking/vue2.0-vuex2.0-demo-jianshu</a></p>
-<h3 id="准备知识"><a href="#准备知识" class="headerlink" title="准备知识"></a>准备知识</h3><ul>
-<li><p>vue-resource</p>
-<p>vue-resouce是一款Vue.js插件，他可以通过XMLHttpRequest或JSONP发起请求并处理响应，也就是说$.ajax能做的事情，vue-resource插件也能够做到，而且vue-resource的API更为简洁。</p>
-</li>
-<li><p>Express</p>
-<p>Express是基于Node.js的Web开发框架，可以快速地搭建一个完整功能的网站</p>
-</li>
-<li><p>数据库知识</p>
-<p>基本的数据库知识，包括表的创建，增删改查等操作，会编写SQL语句 </p>
-</li>
-</ul>
-<h3 id="数据库设计"><a href="#数据库设计" class="headerlink" title="数据库设计"></a>数据库设计</h3><p>简书网站主要分为用户表和文章表，因此数据库设计如下，建表语句对应的文件为jianshu.sql</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">create table users</div><div class="line">(</div><div class="line">   id                   int          auto_increment    not null primary key,</div><div class="line">   email                varchar(50)                    not null,</div><div class="line">   nickname             varchar(15)                    not null,</div><div class="line">   telephone            varchar(11)                    null,</div><div class="line">   password             varchar(20)                    not null,</div><div class="line">   attention_count      int          default 0         null,</div><div class="line">   enjoy_count          int          default 0         null</div><div class="line">)ENGINE=InnoDB DEFAULT CHARSET=utf8;</div><div class="line"></div><div class="line">create table article</div><div class="line">(</div><div class="line">  id                   int          auto_increment    not null primary key,</div><div class="line">  type                 varchar(10)                    null,</div><div class="line">  topic                varchar(10)                    null,</div><div class="line">  user_id              int                            not null,</div><div class="line">  title                varchar(30)                    not null,</div><div class="line">  content              longtext                       not null,</div><div class="line">  read_count           int          default 0         null,</div><div class="line">  comment_count        int          default 0         null,</div><div class="line">  like_count           int          default 0         null,</div><div class="line">  reward_count         int          default 0         null,</div><div class="line">  publish_time         varchar(20)                    null,</div><div class="line">  picture_url          varchar(100)                   null</div><div class="line">)ENGINE=InnoDB DEFAULT CHARSET=utf8;</div></pre></td></tr></table></figure>
-<h3 id="创建server"><a href="#创建server" class="headerlink" title="创建server"></a>创建server</h3><p>在build/dev-server.js文件中可以发现有以下代码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">var express = require(&apos;express&apos;);</div><div class="line">var app = express();</div></pre></td></tr></table></figure>
-<p>该代码表示利用Express启动一个server，而且通过<code>app.use()</code>方法使用了一系列的中间件，在实现对应的模块功能时会添加对应的处理。</p>
-<p>为了方便做更好的讲解，下面将通过实际的功能模块进行描述，主要包括注册登录模块和编写文章模块以及加载文章列表模块三个部分。</p>
-<h3 id="注册与登录"><a href="#注册与登录" class="headerlink" title="注册与登录"></a>注册与登录</h3><p>首先看下登录的页面<br><img src="https://p0.meituan.net/dpnewvc/40aff5f1eb64935fd76a4f98f87a81e6125260.png" alt="登录界面"></p>
-<p>注册与登录主要是针对用户的操作，我们按照这个功能的整个流程来讲解。</p>
-<ul>
-<li><p>前端页面的编写</p>
-</li>
-<li><p>利用vue-resource发送请求到后端</p>
-</li>
-<li><p>服务端接收请求，处理参数</p>
-</li>
-<li><p>处理完的数据存入数据库</p>
-</li>
-<li><p>给前端页面响应的响应结果</p>
-</li>
-</ul>
-<h4 id="前端页面内容"><a href="#前端页面内容" class="headerlink" title="前端页面内容"></a>前端页面内容</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">&lt;form name=&quot;formLogin&quot; class=&quot;login-form&quot; accept-charset=&quot;UTF-8&quot; method=&quot;post&quot;&gt;</div><div class="line">  &lt;div class=&quot;username&quot;&gt;</div><div class="line">    &lt;span class=&quot;span1&quot;&gt;&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;&lt;/span&gt;</div><div class="line">    &lt;input type=&quot;text&quot; name=&quot;login_name&quot; placeholder=&quot;邮件/电话号码&quot; v-model=&quot;login.email&quot; class=&quot;span2&quot;&gt;</div><div class="line">  &lt;/div&gt;</div><div class="line">  &lt;div class=&quot;password&quot;&gt;</div><div class="line">    &lt;span class=&quot;span1&quot;&gt;&lt;i class=&quot;fa fa-unlock-alt&quot;&gt;&lt;/i&gt;&lt;/span&gt;</div><div class="line">    &lt;input type=&quot;password&quot; name=&quot;login_password&quot; placeholder=&quot;密码&quot; v-model=&quot;login.password&quot; class=&quot;span2&quot;&gt;</div><div class="line">  &lt;/div&gt;</div><div class="line">  &lt;button class=&quot;login-btn btn&quot; type=&quot;button&quot; @click=&apos;doLogin&apos;&gt;&lt;span&gt;登录&lt;/span&gt;&lt;/button&gt;</div><div class="line">  &lt;div class=&quot;login-control&quot;&gt;</div><div class="line">			&lt;span class=&quot;f-l checkbox&quot; :class=&quot;&#123;checked: checked === true&#125;&quot;</div><div class="line">        @click=&quot;checked = !checked&quot;&gt;</div><div class="line">				&lt;input type=&quot;checkbox&quot; class=&quot;remember&quot; checked=&quot;checked&quot;&gt;</div><div class="line">				&lt;ins class=&quot;check&quot;&gt;&lt;/ins&gt;</div><div class="line">			&lt;/span&gt;</div><div class="line">    &lt;span class=&quot;f-l&quot;&gt;记住我&lt;/span&gt;</div><div class="line">    &lt;span class=&quot;f-r&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;forget-color&quot;&gt;忘记密码&lt;/a&gt;&lt;/span&gt;</div><div class="line">  &lt;/div&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
-<h4 id="vue-resource发送请求"><a href="#vue-resource发送请求" class="headerlink" title="vue-resource发送请求"></a>vue-resource发送请求</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"> // 注册</div><div class="line">doRegist () &#123;</div><div class="line">    this.$http.post(&apos;/user/register&apos;, this.user).then(function (response) &#123;</div><div class="line">        this.dealResponse(response)</div><div class="line">    &#125;)</div><div class="line">&#125;,</div><div class="line">// 登陆</div><div class="line">doLogin () &#123;</div><div class="line">    var url = &apos;/user/login?email=&apos; + this.login.email + &apos;&amp;password=&apos; + this.login.password</div><div class="line">    this.$http.get(url).then(function (response) &#123;</div><div class="line">        this.dealResponse(response)</div><div class="line">    &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="服务端接收请求"><a href="#服务端接收请求" class="headerlink" title="服务端接收请求"></a>服务端接收请求</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line">// 用户注册</div><div class="line">app.post(&apos;/user/register&apos;, function (req, res) &#123;</div><div class="line">    var user = req.body   //post请求中，需要通过req.body获取请求体的内容</div><div class="line">    userDbUtil.getUserByRegister(user.email, user.nickname).then(function (response) &#123;</div><div class="line">        if(response[0]) &#123;</div><div class="line">            var respResult = &#123;</div><div class="line">                status: 0,</div><div class="line">                message: &apos;邮箱/电话/昵称已注册,请重新注册!&apos;</div><div class="line">            &#125;</div><div class="line">            appResponse(res, JSON.stringify(respResult))</div><div class="line">        &#125; else &#123;</div><div class="line">            userDbUtil.saveUser(user).then(function () &#123;</div><div class="line">                var respResult = &#123;</div><div class="line">                    status: 1,</div><div class="line">                    message: &apos;恭喜你,注册成功!&apos;</div><div class="line">                &#125;</div><div class="line">                appResponse(res, JSON.stringify(respResult))</div><div class="line">            &#125;)</div><div class="line">        &#125;</div><div class="line">    &#125;, function () &#123;</div><div class="line">        var respResult = &#123;</div><div class="line">            status: 0,</div><div class="line">            message: &apos;注册失败!&apos;</div><div class="line">        &#125;</div><div class="line">        appResponse(res, JSON.stringify(respResult))</div><div class="line">    &#125;)</div><div class="line">&#125;)</div><div class="line"></div><div class="line">// 登陆</div><div class="line">app.get(&apos;/user/login&apos;, function (req, res) &#123;</div><div class="line">    var email = req.query.email    //get请求中，通过req.query属性获取传递的参数</div><div class="line">    var password = req.query.password</div><div class="line">    userDbUtil.getUserByLogin(email, password).then(function (response) &#123;</div><div class="line">        var respResult</div><div class="line">        if(response.length) &#123;</div><div class="line">            // 登录信息写入session</div><div class="line">            req.session.isLogin = true;</div><div class="line">            req.session.user = response[0];</div><div class="line">            respResult = &#123;</div><div class="line">                status: 1,</div><div class="line">                message: &apos;登录成功!&apos;</div><div class="line">            &#125;</div><div class="line">        &#125; else &#123;</div><div class="line">            respResult = &#123;</div><div class="line">                status: 0,</div><div class="line">                message: &apos;用户名或密码错误,登录失败!&apos;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        appResponse(res, JSON.stringify(respResult))</div><div class="line">    &#125;, function () &#123;</div><div class="line">        var respResult = &#123;</div><div class="line">            status: 0,</div><div class="line">            message: &apos;用户名或密码错误,登录失败!&apos;</div><div class="line">        &#125;</div><div class="line">        appResponse(res, JSON.stringify(respResult))</div><div class="line">    &#125;)</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
-<p>在用户登录的时候会利用session记录登录信息，所以在Express中需要引入<code>express-session</code>模块，在build/dev-server.js文件中需要添加如下代码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">// 引入session模块,判断登录情况</div><div class="line">var session = require(&apos;express-session&apos;)</div><div class="line">app.use(session(&#123;</div><div class="line">  secret: &apos;kingx_only&apos;,</div><div class="line">  cookie: &#123;maxAge: 20 * 60 * 1000&#125;</div><div class="line">&#125;))</div></pre></td></tr></table></figure>
-<h4 id="数据库操作"><a href="#数据库操作" class="headerlink" title="数据库操作"></a>数据库操作</h4><ul>
-<li>数据库的连接</li>
-</ul>
-<p>数据库的连接是通用的操作，所以将其封装在一个文件dbUtil/dbConnection.js中，各个模块需要使用数据库的操作时只需要require该文件即可。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">var mysql = require(&apos;mysql&apos;)</div><div class="line"></div><div class="line">// 以下的数据库名称，用户名和密码大家自行更改</div><div class="line">var options = &#123;</div><div class="line">    host: &apos;localhost&apos;,</div><div class="line">    port: 3306,</div><div class="line">    user: &apos;root&apos;,</div><div class="line">    password: &apos;XXX&apos;,</div><div class="line">    database: &apos;jianshu&apos;</div><div class="line">&#125;</div><div class="line"></div><div class="line">var connection = mysql.createConnection(options)</div><div class="line"></div><div class="line">module.exports = connection</div></pre></td></tr></table></figure>
-<ul>
-<li>数据库操作</li>
-</ul>
-<p>在将数据保存至数据库中时，利用Promise实现</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">// 保存用户</div><div class="line">userDbUtil.saveUser = function (user) &#123;</div><div class="line">    var promise = new Promise(function (resolve, reject) &#123;</div><div class="line">        var sql = &apos;insert into users(email, nickname, password) values(?, ?, ?)&apos;</div><div class="line">        var params = [user.email, user.nickname, user.password]</div><div class="line"></div><div class="line">        connection.connect(function()&#123;</div><div class="line">            connection.query(sql, params, function (error, response) &#123;</div><div class="line">                if(error)&#123;</div><div class="line">                    reject(error)</div><div class="line">                &#125; else &#123;</div><div class="line">                    resolve(response)</div><div class="line">                &#125;</div><div class="line">            &#125;)</div><div class="line">        &#125;)</div><div class="line">    &#125;)</div><div class="line">    return promise</div><div class="line">&#125;</div><div class="line"></div><div class="line">// 注册时,查找用户</div><div class="line">userDbUtil.getUserByRegister = function (email, nickname) &#123;</div><div class="line">    var promise = new Promise(function (resolve, reject) &#123;</div><div class="line">        var sql = &apos;select * from users where email = ? or nickname = ?&apos;</div><div class="line">        var params = [email, nickname]</div><div class="line">        connection.connect(function () &#123;</div><div class="line">            connection.query(sql, params, function (error, response) &#123;</div><div class="line">                if(error) &#123;</div><div class="line">                    reject(error)</div><div class="line">                &#125; else &#123;</div><div class="line">                    resolve(response)</div><div class="line">                &#125;</div><div class="line">            &#125;)</div><div class="line">        &#125;)</div><div class="line">    &#125;)</div><div class="line">    return promise</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<ul>
-<li>处理响应</li>
-</ul>
-<p>在前端页面文件中，将处理响应的函数封装成一个公共的函数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">// 处理响应</div><div class="line">dealResponse (response) &#123;</div><div class="line">    var self = this</div><div class="line">    self.show_result = true</div><div class="line">    var resData = JSON.parse(response.body)</div><div class="line">    this.result = resData.message</div><div class="line">    if (resData.status) &#123;</div><div class="line">        setTimeout(function () &#123;</div><div class="line">            self.show_result = false</div><div class="line">            // 注册成功后,直接自动登录到主页</div><div class="line">            self.$router.push(&apos;/home/article/hot&apos;)</div><div class="line">            self.$store.dispatch(&apos;changeIsLogin&apos;, true)</div><div class="line">        &#125;, 1000)</div><div class="line">    &#125; else &#123;</div><div class="line">        setTimeout(function () &#123;</div><div class="line">            self.show_result = false</div><div class="line">        &#125;, 1000)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>通过以上5步，就可以完成用户注册或者登陆的操作，当然上述代码并不是全部的代码，只是一些必要的函数，如果需要整体运行，还需要在本地建立好数据库，然后运行整个系统</p>
-<h3 id="写文章"><a href="#写文章" class="headerlink" title="写文章"></a>写文章</h3><p>在完成用户的注册和登录功能后，写文章应该是简书最重要的功能了，同样我们按照上述5个步骤来实现这个功能。首先来看下写文章的界面如下<br><img src="https://p1.meituan.net/dpnewvc/c37d4ffb5dfd48d02965834c22bf086d99843.png"></p>
-<h4 id="前端页面内容-1"><a href="#前端页面内容-1" class="headerlink" title="前端页面内容"></a>前端页面内容</h4><p>为了能写出更好看的文章，也是费了一段功夫去找支持vue的富文本编辑器，虽然现在的vue富文本编辑器已经有很多了，但是也会有各种各样的问题，比如使用复杂度上，或者字体上，最终选取了<a href="https://github.com/surmon-china/vue-quill-editor" target="_blank" rel="external">vue-quill-editor</a>作为简书的文本编辑器。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">&lt;div class=&quot;note-editor&quot;&gt;</div><div class="line">  &lt;div class=&quot;wrapper-head&quot;&gt;</div><div class="line">    &lt;div class=&quot;note-head&quot;&gt;</div><div class="line">      &lt;input type=&quot;text&quot; class=&quot;top-title&quot; data-type=&quot;title&quot; v-model=&quot;note.title&quot;&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">  &lt;/div&gt;</div><div class="line">  &lt;div class=&quot;wrapper-body&quot;&gt;</div><div class="line"></div><div class="line">    &lt;quill-editor ref=&quot;myTextEditor&quot;</div><div class="line">                  v-model=&quot;note.content&quot;</div><div class="line">                  :config=&quot;editorOption&quot;</div><div class="line">                  @blur=&quot;onEditorBlur($event)&quot;</div><div class="line">                  @focus=&quot;onEditorFocus($event)&quot;</div><div class="line">                  @ready=&quot;onEditorReady($event)&quot;&gt;&lt;/quill-editor&gt;</div><div class="line">  &lt;/div&gt;</div><div class="line">  &lt;div class=&quot;wrapper-footer&quot;&gt;</div><div class="line">    &lt;div class=&quot;footer-div&quot;&gt;</div><div class="line">      &lt;button class=&quot;btn&quot; @click=&quot;saveArticle&quot;&gt;保存&lt;/button&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">  &lt;/div&gt;</div><div class="line">&lt;/div&gt;</div></pre></td></tr></table></figure>
-<h4 id="Vue-resource发送请求"><a href="#Vue-resource发送请求" class="headerlink" title="Vue-resource发送请求"></a>Vue-resource发送请求</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">// 保存文章</div><div class="line">saveArticle () &#123;</div><div class="line">    this.$http.post(&apos;/article/saveArticle&apos;, this.note).then(function (response) &#123;</div><div class="line">    	</div><div class="line">    &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="服务端处理请求"><a href="#服务端处理请求" class="headerlink" title="服务端处理请求"></a>服务端处理请求</h4><p>在使用<code>vue-quill-editor</code>富文本编辑器编写文章的时候，如果遇到添加图片的情况，<code>vue-quill-editor</code>会将图片转化为base64格式的编码，由于base64格式编码的数据量会很大，这样在发送请求时Express会报错。因此需要对Express的body-parser模块进行设置。在build/dev-server.js文件下，添加如下代码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">// 需要使用body-parser模块,要不然post方法获取不到传递的参数</div><div class="line">var bodyParser = require(&apos;body-parser&apos;)</div><div class="line">// 设置接收参数的大小,主要针对于base64的图片</div><div class="line">app.use(bodyParser(&#123;limit: &apos;50mb&apos;&#125;))</div><div class="line">app.use(bodyParser.json())</div><div class="line">app.use(bodyParser.urlencoded(&#123;extended: false&#125;))</div></pre></td></tr></table></figure>
-<p>实际处理文章的服务端代码如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">// 保存文章</div><div class="line">app.post(&apos;/article/saveArticle&apos;, function (req, res) &#123;</div><div class="line">    var article = req.body</div><div class="line">    // 获取用户id</div><div class="line">    article.userId = req.session.user.id</div><div class="line">    // 获取当前时间</div><div class="line">    article.publishTime = new Date().format(&apos;yyyy-MM-dd hh:mm:ss&apos;)</div><div class="line">    articleDbUtil.saveArticle(article).then(function (response) &#123;</div><div class="line">        var resultObj = &#123;</div><div class="line">            status: 1,</div><div class="line">            message: &apos;保存成功&apos;,</div><div class="line">            articleId: response[0].id</div><div class="line">        &#125;</div><div class="line">        appResponse(res, JSON.stringify(resultObj))</div><div class="line">    &#125;, function () &#123;</div><div class="line">        var resultObj = &#123;</div><div class="line">            status: 0,</div><div class="line">            message: &apos;保存失败&apos;</div><div class="line">        &#125;</div><div class="line">        appResponse(res, JSON.stringify(resultObj))</div><div class="line">    &#125;)</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
-<h4 id="数据库操作-1"><a href="#数据库操作-1" class="headerlink" title="数据库操作"></a>数据库操作</h4><p>由于数据库连接采用相同的配置，此处省略数据库连接的代码。</p>
-<p>由于图片会被编码成base64格式的数据，考虑到content字段的数据量会比较大，在设计content字段时采用的是longtext类型。</p>
-<p>根据实际的业务逻辑，在写完一篇文章后会直接展示该篇文章，所以在将一篇文章保存后会获取该文章的id返回给客户端，因此以下代码中使用了Promise链的写法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">// 保存文章</div><div class="line">articleDbUtil.saveArticle = function (article) &#123;</div><div class="line">    var promise = new Promise(function (resolve, reject) &#123;</div><div class="line">        connection.connect(function () &#123;</div><div class="line">            var sql = &apos;insert into article(user_id, title, content, publish_time) values(?, ?, ?, ?)&apos;</div><div class="line">            var params = [article.userId, article.title, article.content, article.publishTime]</div><div class="line">            connection.query(sql, params, function (error, response) &#123;</div><div class="line">                if(error) &#123;</div><div class="line">                    reject(error)</div><div class="line">                &#125; else &#123;</div><div class="line">                    resolve(response)</div><div class="line">                &#125;</div><div class="line">            &#125;)</div><div class="line">        &#125;)</div><div class="line">    &#125;)</div><div class="line">    var newPromise = promise.then(function () &#123;</div><div class="line">        return new Promise(function (resolve, reject) &#123;</div><div class="line">            connection.connect(function () &#123;</div><div class="line">                var sql = &apos;select id from article where user_id = ? and title = ? and publish_time = ?&apos;</div><div class="line">                var params = [article.userId, article.title, article.publishTime]</div><div class="line">                connection.query(sql, params, function (error, response) &#123;</div><div class="line">                    if (error) &#123;</div><div class="line">                        reject(error)</div><div class="line">                    &#125; else &#123;</div><div class="line">                        resolve(response)</div><div class="line">                    &#125;</div><div class="line">                &#125;)</div><div class="line">            &#125;)</div><div class="line">        &#125;)</div><div class="line">    &#125;)</div><div class="line"></div><div class="line">    return newPromise</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="处理响应"><a href="#处理响应" class="headerlink" title="处理响应"></a>处理响应</h4><p>在保存完文章后，会根据返回的文章id，再跳转到文章展示的页面，所以会用<code>_self.$router.push(&#39;/article/&#39; + resData.articleId)</code>进行路由跳转</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">// 保存文章</div><div class="line">saveArticle () &#123;</div><div class="line">    this.$http.post(&apos;/article/saveArticle&apos;, this.note).then(function (response) &#123;</div><div class="line">        var resData = JSON.parse(response.body)</div><div class="line">        if (resData.status) &#123;</div><div class="line">            var _self = this</div><div class="line">            _self.resMsg = &apos;恭喜你!发表成功&apos;</div><div class="line">            _self.show_result = true</div><div class="line">            setTimeout(function () &#123;</div><div class="line">                _self.$router.push(&apos;/article/&apos; + resData.articleId)</div><div class="line">            &#125;, 1000)</div><div class="line">        &#125; else &#123;</div><div class="line">            this.show_result = true</div><div class="line">            this.resMsg = &apos;发表失败&apos;</div><div class="line">        &#125;</div><div class="line">    &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="文章列表"><a href="#文章列表" class="headerlink" title="文章列表"></a>文章列表</h3><p>在写完文章后，会在主页上显示出已经写的文章列表，如下图显示<br><img src="https://p0.meituan.net/dpnewvc/16943ad2e51e5b7f9b8cd159c5cb9dbd1472821.png"></p>
-<h4 id="前端页面内容-2"><a href="#前端页面内容-2" class="headerlink" title="前端页面内容"></a>前端页面内容</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">&lt;template&gt;</div><div class="line">    &lt;div&gt;</div><div class="line">        &lt;ul&gt;</div><div class="line">            &lt;li class=&quot;list&quot; v-for=&quot;article in articles&quot;&gt;</div><div class="line">                &lt;p class=&quot;list-top&quot;&gt;</div><div class="line">                    &lt;a href=&quot;#&quot; class=&quot;author&quot;&gt;</div><div class="line">                        &lt;span&gt;&#123;&#123;article.nickname&#125;&#125;&lt;/span&gt;</div><div class="line">                    &lt;/a&gt;</div><div class="line">                    &lt;span class=&quot;time&quot;&gt;</div><div class="line">                        - &#123;&#123;article.publish_time&#125;&#125;</div><div class="line">                    &lt;/span&gt;</div><div class="line">                &lt;/p&gt;</div><div class="line">                &lt;h2 class=&quot;title&quot;&gt;</div><div class="line">                    &lt;router-link :to=&quot;&#123;path: &apos;/article/&apos; + article.id&#125;&quot;&gt;&#123;&#123;article.title&#125;&#125;&lt;/router-link&gt;</div><div class="line">                &lt;/h2&gt;</div><div class="line">                &lt;span class=&quot;small-text&quot;&gt;阅读 &#123;&#123;article.read_count&#125;&#125;&lt;/span&gt;</div><div class="line">                &lt;span class=&quot;small-text&quot;&gt;评论 &#123;&#123;article.comment_count&#125;&#125;&lt;/span&gt;</div><div class="line">                &lt;span class=&quot;small-text&quot;&gt;喜欢 &#123;&#123;article.like_count&#125;&#125;&lt;/span&gt;</div><div class="line">                &lt;span class=&quot;small-text&quot;&gt;打赏 &#123;&#123;article.reward_count&#125;&#125;&lt;/span&gt;</div><div class="line">                &lt;span class=&quot;image&quot;</div><div class="line">                      :style=&quot;&#123;&apos;background&apos;: &apos;url(&apos; + (article.picture_url || defaultUrl) + &apos;)&apos;, backgroundSize: &apos;100%&apos;, backgroundRepeat: &apos;no-repeat&apos; &#125;&quot;&gt;&lt;/span&gt;</div><div class="line">            &lt;/li&gt;</div><div class="line">        &lt;/ul&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/template&gt;</div></pre></td></tr></table></figure>
-<h4 id="加载文章列表"><a href="#加载文章列表" class="headerlink" title="加载文章列表"></a>加载文章列表</h4><p>在刚进入主页的时候会在主页Home.vue文件中发送请求，加载出文章列表</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">methods: &#123;</div><div class="line">    displayArticles (type) &#123;</div><div class="line">        // 发送请求,找出对应类型的文章</div><div class="line">        var url = &apos;/article/list?type=&apos; + type</div><div class="line">        this.$http.get(url).then(function (response) &#123;</div><div class="line">            </div><div class="line">        &#125;)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="服务端请求"><a href="#服务端请求" class="headerlink" title="服务端请求"></a>服务端请求</h4><p>在app-article-server.js文件中，包含了加载文件列表的内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">// 加载文章列表</div><div class="line">app.get(&apos;/article/list&apos;, function (req, res) &#123;</div><div class="line">    var type = req.query.type</div><div class="line">    articleDbUtil.loadArticleByType(type).then(function (response) &#123;</div><div class="line">        if(response.length) &#123;</div><div class="line">            var resultObj = &#123;</div><div class="line">                status: 1,</div><div class="line">                message: &apos;加载成功&apos;,</div><div class="line">                articleList: response</div><div class="line">            &#125;</div><div class="line">            appResponse(res, JSON.stringify(resultObj))</div><div class="line">        &#125;</div><div class="line">    &#125;, function () &#123;</div><div class="line">        var resultObj = &#123;</div><div class="line">            status: 0,</div><div class="line">            message: &apos;加载失败&apos;</div><div class="line">        &#125;</div><div class="line">        appResponse(resultObj)</div><div class="line">    &#125;)</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
-<h4 id="数据库操作-2"><a href="#数据库操作-2" class="headerlink" title="数据库操作"></a>数据库操作</h4><p>在articleDbUtil.js文件中，包含了从数据库加载出文章列表的内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">// 加载某类型的文章</div><div class="line">articleDbUtil.loadArticleByType = function (type) &#123;</div><div class="line">    var promise = new Promise(function (resolve, reject) &#123;</div><div class="line">        connection.connect(function () &#123;</div><div class="line">            var sql = &apos;select a.*, u.nickname from article as a, users as u where a.user_id = u.id&apos;</div><div class="line">            var params = []</div><div class="line">            connection.query(sql, function (error, response) &#123;</div><div class="line">                if (error) &#123;</div><div class="line">                    reject(error)</div><div class="line">                &#125; else &#123;</div><div class="line">                    resolve(response)</div><div class="line">                &#125;</div><div class="line">            &#125;)</div><div class="line">        &#125;)</div><div class="line">    &#125;)</div><div class="line">    return promise</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="处理响应-1"><a href="#处理响应-1" class="headerlink" title="处理响应"></a>处理响应</h4><p>在将文章列表返回给浏览器端后，会直接将数据写到Vuex的store中，在ArticleList.vue文件中直接从store中读取即可。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">displayArticles (type) &#123;</div><div class="line">    // 发送请求,找出对应类型的文章</div><div class="line">    var url = &apos;/article/list?type=&apos; + type</div><div class="line">    this.$http.get(url).then(function (response) &#123;</div><div class="line">        var resData = JSON.parse(response.body)</div><div class="line">        if (resData.status) &#123;</div><div class="line">            var articleList = resData.articleList</div><div class="line">            var payload = &#123;</div><div class="line">                type: type,</div><div class="line">                articleList: articleList</div><div class="line">            &#125;</div><div class="line">            this.$store.dispatch(&apos;displayArticles&apos;, payload)</div><div class="line">        &#125;</div><div class="line">    &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>至此关于注册登录和写文章以及加载文章列表的功能就已经完成了，这基本上是简书网站的最主要功能了，后续的例如专题的功能可以按照以上的5个步骤来完成，当然如果你们能想到哪些更有趣的功能，都可以自己添加到网站上。</p>
-<p>通过两篇文章，基本涵盖了利用Vue全家桶+Express+Webpack搭建简书的全过程，包括前端、后台、数据库操作等等，希望能给大家带来帮助，也希望大家能提些意见。</p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
-<li><a href="http://javascript.ruanyifeng.com/nodejs/express.html#toc0" target="_blank" rel="external">Express框架</a></li>
-<li><a href="http://www.cnblogs.com/keepfool/p/5657065.html" target="_blank" rel="external">Vue-resource全攻略</a></li>
-<li><a href="https://github.com/surmon-china/vue-quill-editor" target="_blank" rel="external">Vue富文本编辑器vue-quill-editor</a></li>
-<li><a href="http://blog.csdn.net/xycit/article/details/5854694" target="_blank" rel="external">Mysql基本操作</a></li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;继上一篇文章&lt;a href=&quot;http://xgfe.github.io/2016/12/22/zhouxiong/Vue2.0+Vue-router2.0+Vuex2.0/&quot;&gt;Vue2.0+Vue-router2.0+Vuex2.0搭建简书&lt;/a&gt;，该文章主要讲述简书网站的前端搭建过程。本篇文章将重点讲述简书网站的服务端搭建，服务端主要通过Express启动一个本地server处理请求，将数据保存至数据库中。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="zhouxiong" scheme="http://xgfe.github.io/categories/zhouxiong/"/>
-    
-    
-      <category term="Vue2.0" scheme="http://xgfe.github.io/tags/Vue2-0/"/>
-    
-      <category term="Vue-resource" scheme="http://xgfe.github.io/tags/Vue-resource/"/>
-    
-      <category term="Express" scheme="http://xgfe.github.io/tags/Express/"/>
     
   </entry>
   

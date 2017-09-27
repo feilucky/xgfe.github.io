@@ -265,7 +265,7 @@
 <a id="more"></a>
 <h4 id="前菜之背景介绍"><a href="#前菜之背景介绍" class="headerlink" title="前菜之背景介绍"></a>前菜之背景介绍</h4><p>话说某天，楼主吃着火锅唱着歌，逛到了React的Performance Tools版块，心血来潮，放到了手上的项目里面玩了玩，看完后整个人都不太好了，数据如下(我一页屏幕都截不完……)：<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-oldPref.png?" alt="性能图"><br>但实际上我所执行的操作仅仅只是为颜色外观打了个分，如下所示：<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-coperation.png" alt="操作图"></p>
 <p>根据上面的统计数据，初略计算了下，一个打分操作render count为293。一个页面必填5个打分项，如此一来总共render count  &gt;= 1465，其中还排除了用户打分完毕后继续修改的情况。不用我说，大家也能看出这是一个相当不合理的数字。因为就理想状况而言，打分操作最多只影响当前的打分项，一个打分组件五颗星，其具体结构如下所示:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;View key=&#123;i&#125;&gt;</div><div class="line">      &lt;TouchableOpacity</div><div class="line">        style=&#123;&#123;marginTop: 5, marginRight: 5&#125;&#125;</div><div class="line">        onPress=&#123;() =&gt;&#123;......&#125;</div><div class="line">        &gt;</div><div class="line">        &lt;IconFont name="star" size=&#123;StyleSheet.r(22)&#125; color=&#123;color&#125;/&gt;</div><div class="line">      &lt;/TouchableOpacity&gt;</div><div class="line"> &lt;/View&gt;</div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;View key=&#123;i&#125;&gt;</div><div class="line">      <span class="xml"><span class="tag">&lt;<span class="name">TouchableOpacity</span></span></span></div><div class="line">        <span class="attr">style</span>=<span class="string">&#123;&#123;marginTop:</span> <span class="attr">5</span>, <span class="attr">marginRight:</span> <span class="attr">5</span>&#125;&#125;</div><div class="line">        <span class="attr">onPress</span>=<span class="string">&#123;()</span> =&gt;&#123;......&#125;</div><div class="line">        &gt;</div><div class="line">        <span class="tag">&lt;<span class="name">IconFont</span> <span class="attr">name</span>=<span class="string">"star"</span> <span class="attr">size</span>=<span class="string">&#123;StyleSheet.r(22)&#125;</span> <span class="attr">color</span>=<span class="string">&#123;color&#125;/</span>&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">TouchableOpacity</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">View</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>因此直接改变量为3*5=15是比较合理，再加上全局的Navar以及connect等操作，render count达到293也是绝对不合理且，通过分析，我们可以看到有很多数据根本没改变的组件也被重新渲染了的，这部分开销完全是不必要且有相当大的改进空间的。既然如此，我们来改进下吧~</p>
 <p>为了减少环境变量且便于修改与测试，我们基于种子项目来模拟当前的状况。种子项目在React Native官方项目基础上集成了Redux进行数据处理，除此之外还提供了一些基本的工具函数及路由封装。<br>我们构造了两个页面，点击第一个页面的button会跳转到第二个页面，在第二个页面会从服务器端获取数据，渲染成列表形式，除此之外在列表上方有一个button，它会记录点击次数并且展示出来。大概布局如下：<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-exampleLayout.png?imageView2/2/w/500/h/500/q/100|watermark/2/text/bHVsdXRpYQ==/font/5a6L5L2T/fontsize/240/fill/IzAwMDAwMA==/dissolve/20/gravity/SouthEast/dx/10/dy/10|imageslim" alt="demo图"></p>
 <p>既然是模拟前文的情况，那我们可以预测点击addCount button后，整个列表应该是被重新渲染了的，虽然他的数据实际上并没有变化，讲道理是不应该重新渲染的。实际结果如下图所示，的确和我们的预测一样，List下的Text render count是不必要的。<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-examplePref.png?" alt="demo性能图"></p>
@@ -407,8 +407,8 @@
 <ul>
 <li><p>函数的传递方式需要注意</p>
 <p>  如果每次render时都是重新声明的函数，则其对比会有问题，因为is()内部对函数的对比是基于ValueOf的，所以将下面的第一种方式改为第二种方式：</p>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;() =&gt; <span class="keyword">this</span>.addCount()&#125; style=&#123;Style.btnContainer&#125;&gt;</div><div class="line">     &lt;Text style=&#123;Style.btnWord&#125;&gt;addCount&lt;/Text&gt;</div><div class="line"> &lt;<span class="regexp">/TouchableOpacity&gt;</span></div></pre></td></tr></table></figure>
-  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;<span class="keyword">this</span>.addCount&#125; style=&#123;Style.btnContainer&#125;&gt;</div><div class="line">      &lt;Text style=&#123;Style.btnWord&#125;&gt;addCount&lt;/Text&gt;</div><div class="line">  &lt;<span class="regexp">/TouchableOpacity&gt;</span></div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;() =&gt; <span class="keyword">this</span>.addCount()&#125; style=&#123;Style.btnContainer&#125;&gt;</div><div class="line">     <span class="xml"><span class="tag">&lt;<span class="name">Text</span> <span class="attr">style</span>=<span class="string">&#123;Style.btnWord&#125;</span>&gt;</span>addCount<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></span></div><div class="line"> &lt;<span class="regexp">/TouchableOpacity&gt;</span></div></pre></td></tr></table></figure>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;<span class="keyword">this</span>.addCount&#125; style=&#123;Style.btnContainer&#125;&gt;</div><div class="line">      <span class="xml"><span class="tag">&lt;<span class="name">Text</span> <span class="attr">style</span>=<span class="string">&#123;Style.btnWord&#125;</span>&gt;</span>addCount<span class="tag">&lt;/<span class="name">Text</span>&gt;</span></span></div><div class="line">  &lt;<span class="regexp">/TouchableOpacity&gt;</span></div></pre></td></tr></table></figure>
 </li>
 </ul>
 <p>经过上面这些改造后，我们的demo文件Render count如下所示，很好，楼主又可以欢快的吃火锅啦：<br><img src="http://okzzg7ifm.bkt.clouddn.com/immutable-after.png?" alt="优化之后"></p>
@@ -539,21 +539,21 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">68</span>
+              <span class="site-state-item-count">70</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             
-              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-count">23</span>
               <span class="site-state-item-name">作者</span>
               
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">97</span>
+              <span class="site-state-item-count">99</span>
               <span class="site-state-item-name">标签</span>
               </a>
           </div>
