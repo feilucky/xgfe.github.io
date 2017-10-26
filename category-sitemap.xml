@@ -42,14 +42,14 @@
     </url>
 
     <url>
-        <loc>http://xgfe.github.io/categories/felix/</loc>
+        <loc>http://xgfe.github.io/categories/Cocoa/</loc>
         <lastmod>2017-09-12T08:43:59.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
-        <loc>http://xgfe.github.io/categories/Cocoa/</loc>
+        <loc>http://xgfe.github.io/categories/felix/</loc>
         <lastmod>2017-09-12T08:43:59.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -84,14 +84,7 @@
     </url>
 
     <url>
-        <loc>http://xgfe.github.io/categories/weger/</loc>
-        <lastmod>2017-09-12T08:43:59.000Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>http://xgfe.github.io/categories/wangweitao/</loc>
+        <loc>http://xgfe.github.io/categories/scliuyang/</loc>
         <lastmod>2017-09-12T08:43:59.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -105,14 +98,7 @@
     </url>
 
     <url>
-        <loc>http://xgfe.github.io/categories/scliuyang/</loc>
-        <lastmod>2017-09-12T08:43:59.000Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>http://xgfe.github.io/categories/zero/</loc>
+        <loc>http://xgfe.github.io/categories/wangweitao/</loc>
         <lastmod>2017-09-12T08:43:59.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -120,6 +106,20 @@
 
     <url>
         <loc>http://xgfe.github.io/categories/y8n/</loc>
+        <lastmod>2017-09-12T08:43:59.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/categories/weger/</loc>
+        <lastmod>2017-09-12T08:43:59.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/categories/zero/</loc>
         <lastmod>2017-09-12T08:43:59.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -147,13 +147,6 @@
     </url>
 
     <url>
-        <loc>http://xgfe.github.io/categories/lulutia/</loc>
-        <lastmod>2017-09-22T06:11:01.000Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://xgfe.github.io/categories/Sudaxi/</loc>
         <lastmod>2017-09-27T09:59:20.000Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -163,6 +156,20 @@
     <url>
         <loc>http://xgfe.github.io/categories/Young/</loc>
         <lastmod>2017-09-27T09:59:20.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/categories/lulutia/</loc>
+        <lastmod>2017-10-23T08:34:10.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://xgfe.github.io/categories/liuhongyu/</loc>
+        <lastmod>2017-10-25T09:38:08.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
