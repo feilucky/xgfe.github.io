@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://xgfe.github.io/"/>
-  <updated>2017-10-25T09:38:08.000Z</updated>
+  <updated>2017-12-04T02:43:11.000Z</updated>
   <id>http://xgfe.github.io/</id>
   
   <author>
@@ -16,11 +16,250 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>AbViewUtil屏幕适配方法</title>
+    <link href="http://xgfe.github.io/2017/11/30/lwp/AbViewUtil/"/>
+    <id>http://xgfe.github.io/2017/11/30/lwp/AbViewUtil/</id>
+    <published>2017-11-30T06:34:30.000Z</published>
+    <updated>2017-12-04T02:43:11.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>抛弃 google 提供的 dip 理论与多套图片与布局方案，采用与 UI 设计师通用的 px 作为标准单位，原理是将 UI 设计师的设计图与当前查看的手机或其他设备的屏幕像素尺寸进行换算，得到缩放比例，在 Activity 中装载布局时将所有布局的 px 尺寸进行缩放后设置给布局，就实现了一套尺寸在不同大小的设备上能够按照合理的比例进行缩放，达到万能适配的目的。</p>
+<a id="more"></a>
+<h1 id="AbViewUtil-实现屏幕适配"><a href="#AbViewUtil-实现屏幕适配" class="headerlink" title="AbViewUtil 实现屏幕适配"></a>AbViewUtil 实现屏幕适配</h1><p>AndroidBase 框架中有个 AbViewUtil 类，可以实现屏幕适配。</p>
+<h2 id="一、适配原理"><a href="#一、适配原理" class="headerlink" title="一、适配原理"></a>一、适配原理</h2><p>Android 推荐使用 dp 作为长度单位，sp 作为字体大小单位，App 运行时会根据屏幕像素密度自动适配。但是这种适配并不适用于平板（大尺寸、小密度）和其他特殊尺寸的屏幕，所以为了适配它们就需要添加额外的布局和尺寸文件。</p>
+<p>为了实现一套布局自动适配所有屏幕的目的，可以使用下面的方法。</p>
+<h3 id="1-设计图尺寸"><a href="#1-设计图尺寸" class="headerlink" title="1. 设计图尺寸"></a>1. 设计图尺寸</h3><p>根据设计图尺寸，获取布局的基准宽、高。两者使用统一的单位 <code>px</code>。</p>
+<h3 id="2-布局单位-px"><a href="#2-布局单位-px" class="headerlink" title="2. 布局单位 px"></a>2. 布局单位 px</h3><p>布局文件中各控件的长度单位和 TextView 的字体大小均采用设计图标注的 <code>px</code> 作为单位。</p>
+<h3 id="3-加载布局"><a href="#3-加载布局" class="headerlink" title="3. 加载布局"></a>3. 加载布局</h3><ul>
+<li>将设计图基准尺寸与当前手机屏幕的像素尺寸进行换算，得到缩放比例；</li>
+<li>在装载布局时，将所有控件的 px 尺寸进行缩放后设置给布局；</li>
+<li>如果是 TextView 及其子类，还会设置缩放后的字体大小；</li>
+<li>这样就实现了按照合理的比例进行缩放，达到万能适配的目的。</li>
+</ul>
+<h3 id="4-适用场景"><a href="#4-适用场景" class="headerlink" title="4. 适用场景"></a>4. 适用场景</h3><ul>
+<li>Activity</li>
+<li>Fragment</li>
+<li>Dialog</li>
+<li>PopupWindow</li>
+</ul>
+<h2 id="二、用法"><a href="#二、用法" class="headerlink" title="二、用法"></a>二、用法</h2><p>下面介绍代码方面的使用方法。</p>
+<h3 id="1-自定义设计图的屏幕尺寸"><a href="#1-自定义设计图的屏幕尺寸" class="headerlink" title="1. 自定义设计图的屏幕尺寸"></a>1. 自定义设计图的屏幕尺寸</h3><p>例如设计图为 720×1280，则修改 AbViewUtil 类中常量如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * UI设计的基准宽度.</div><div class="line"> */</div><div class="line">public static int UI_WIDTH = 720;</div><div class="line"></div><div class="line">/**</div><div class="line"> * UI设计的基准高度.</div><div class="line"> */</div><div class="line">public static int UI_HEIGHT = 1280;</div></pre></td></tr></table></figure>
+<h3 id="2-Activity"><a href="#2-Activity" class="headerlink" title="2. Activity"></a>2. Activity</h3><p>需要在 Activity 的 <code>onCreate()</code> 方法中添加如下代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">setContentView(R.layout.activity_main);</div><div class="line">//根据屏幕分辨率和屏幕密度自定缩放</div><div class="line">AbViewUtil.scaleCompat(</div><div class="line">    (LinearLayout) findViewById(R.id.act_main_root_layout)</div><div class="line">);</div></pre></td></tr></table></figure>
+<p>如果使用了 BaseActivity ，可以重写以下方法，实现子类 Activity 调用 setContentView() 方法时自动缩放布局：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">/**</div><div class="line"> * 使用 &#123;@link AbViewUtil&#125; 处理</div><div class="line"> *</div><div class="line"> * @param layoutResID</div><div class="line"> * @see android.app.Activity#setContentView(int)</div><div class="line"> */</div><div class="line">@Override</div><div class="line">public void setContentView(@LayoutRes int layoutResID) &#123;</div><div class="line">    LayoutInflater inflater = LayoutInflater.from(this);</div><div class="line">    View root = inflater.inflate(layoutResID, null);</div><div class="line">    setContentView(root);</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 使用 &#123;@link AbViewUtil&#125; 处理</div><div class="line"> *</div><div class="line"> * @param view</div><div class="line"> * @see android.app.Activity#setContentView(View)</div><div class="line"> */</div><div class="line">@Override</div><div class="line">public void setContentView(@NonNull View view) &#123;</div><div class="line">    super.setContentView(view);</div><div class="line">    AbViewUtil.scaleCompat(view);</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 使用 &#123;@link AbViewUtil&#125; 处理</div><div class="line"> *</div><div class="line"> * @param view</div><div class="line"> * @param params</div><div class="line"> * @see android.app.Activity#setContentView(View, ViewGroup.LayoutParams)</div><div class="line"> */</div><div class="line">@Override</div><div class="line">public void setContentView(@NonNull View view, ViewGroup.LayoutParams params) &#123;</div><div class="line">    super.setContentView(view, params);</div><div class="line">    AbViewUtil.scaleCompat(view);</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 使用 &#123;@link AbViewUtil&#125; 处理</div><div class="line"> *</div><div class="line"> * @param view</div><div class="line"> * @param params</div><div class="line"> * @see android.app.Activity#addContentView(View, ViewGroup.LayoutParams)</div><div class="line"> */</div><div class="line">@Override</div><div class="line">public void addContentView(@NonNull View view, ViewGroup.LayoutParams params) &#123;</div><div class="line">    super.addContentView(view, params);</div><div class="line">    AbViewUtil.scaleCompat(view);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="3-Fragment"><a href="#3-Fragment" class="headerlink" title="3. Fragment"></a>3. Fragment</h3><p>在Fragment的 <code>onCreateView()</code> 方法中添加如下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">inflater = LayoutInflater.from(getActivity());</div><div class="line">rootView = inflater.inflate(R.layout.fragment_function, container, false);</div><div class="line">AbViewUtil.scaleCompat(rootView);</div></pre></td></tr></table></figure>
+<p>也可以在 <code>BaseFragment</code> 中添加如下方法，在子类Fragment的  <code>onCreateView()</code> 中调用以获取缩放后的 View：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 使用 &#123;@link AbViewUtil&#125; 处理</div><div class="line"> *</div><div class="line"> * @param inflater</div><div class="line"> * @param container</div><div class="line"> * @param layoutId</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">protected View getContentView(LayoutInflater inflater, @Nullable ViewGroup container, int layoutId) &#123;</div><div class="line">    View view = inflater.inflate(layoutId, container, false);</div><div class="line">    AbViewUtil.scaleCompat(view);</div><div class="line">    return view;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="4-Dialog-amp-PopupWindow-等"><a href="#4-Dialog-amp-PopupWindow-等" class="headerlink" title="4. Dialog &amp; PopupWindow 等"></a>4. Dialog &amp; PopupWindow 等</h3><p>类似 Dialog 需要传入自定义 View 作为布局的，可以参考如下代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">View view = View.inflate(mContext, layoutResID, null);</div><div class="line">AbViewUtil.scaleCompat(view);</div><div class="line">dialog.setContentView(view);</div></pre></td></tr></table></figure>
+<p>如果有 BaseDialog ，可以重写下列方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void setContentView(int layoutResID) &#123;</div><div class="line">    View view = View.inflate(mContext, layoutResID, null);</div><div class="line">    setContentView(view);</div><div class="line">&#125;</div><div class="line"></div><div class="line">@Override</div><div class="line">public void setContentView(@NonNull View view) &#123;</div><div class="line">    super.setContentView(view);</div><div class="line">    AbViewUtil.scaleCompat(view);</div><div class="line">&#125;</div><div class="line"></div><div class="line">@Override</div><div class="line">public void setContentView(@NonNull View view, ViewGroup.LayoutParams params) &#123;</div><div class="line">    super.setContentView(view, params);</div><div class="line">    AbViewUtil.scaleCompat(view);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="5-注意"><a href="#5-注意" class="headerlink" title="5. 注意"></a>5. 注意</h3><p>布局文件中的宽高和文字大小都统一使用设计图提供的尺寸值，单位统一使用 <code>px</code> 。</p>
+<p>至此，一个Activity的屏幕适配就完成了。</p>
+<h2 id="二、源码"><a href="#二、源码" class="headerlink" title="二、源码"></a>二、源码</h2><p>最新源码请点击：<a href="https://github.com/leowing/commonUtils/blob/master/utils/src/main/java/com/github/leowing/utils/AbViewUtil.java" target="_blank" rel="external">AbViewUtil</a></p>
+<p>示例项目：<a href="https://github.com/leowing/commonUtils/tree/master/example" target="_blank" rel="external">Example</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;抛弃 google 提供的 dip 理论与多套图片与布局方案，采用与 UI 设计师通用的 px 作为标准单位，原理是将 UI 设计师的设计图与当前查看的手机或其他设备的屏幕像素尺寸进行换算，得到缩放比例，在 Activity 中装载布局时将所有布局的 px 尺寸进行缩放后设置给布局，就实现了一套尺寸在不同大小的设备上能够按照合理的比例进行缩放，达到万能适配的目的。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="lwp" scheme="http://xgfe.github.io/categories/lwp/"/>
+    
+    
+      <category term="Android" scheme="http://xgfe.github.io/tags/Android/"/>
+    
+      <category term="适配" scheme="http://xgfe.github.io/tags/%E9%80%82%E9%85%8D/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>this：我们不一样！</title>
+    <link href="http://xgfe.github.io/2017/11/16/wangyue/this/"/>
+    <id>http://xgfe.github.io/2017/11/16/wangyue/this/</id>
+    <published>2017-11-15T16:00:00.000Z</published>
+    <updated>2017-12-01T09:04:27.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>本文主要介绍了JS中的词法作用域及this的特殊性和一个小彩蛋。</p>
+<a id="more"></a>
+<p>我们知道，JS中变量的作用域是「词法作用域」。所谓词法作用域是指作用域在词法解析阶段既确定了，不会改变(这也是闭包成立的基础)。与之对应的是动态作用域，动态作用域是在运行时确定的，其作用域链基于运行时的调用栈。如果想了解更多关于词法作用域的事情，<a href="http://www.jianshu.com/p/70b38c7ab69c" target="_blank" rel="external">点击这里</a>。</p>
+<h5 id="不一样的this"><a href="#不一样的this" class="headerlink" title="不一样的this"></a>不一样的<code>this</code></h5><p>显然，<code>this</code>是不符合词法作用域的，<code>this</code>的指向并不能在函数声明时确定，而与函数运行时的调用栈密切相关。</p>
+<h5 id="this指向的一般规律"><a href="#this指向的一般规律" class="headerlink" title="this指向的一般规律"></a>this指向的一般规律</h5><p>一句话说完，JS函数中this指向函数的直接调用者。<br>这里有两个默认的约定</p>
+<ul>
+<li>原生的dom事件绑定的函数，直接调用者为该dom节点</li>
+<li>直接执行一个函数，在非严格模式下，直接调用者为window(浏览器下)，严格模式下，直接调用者为<code>undefined</code></li>
+</ul>
+<h5 id="this指向的例外情况"><a href="#this指向的例外情况" class="headerlink" title="this指向的例外情况"></a>this指向的例外情况</h5><ul>
+<li><p><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/call" target="_blank" rel="external"><code>call</code></a>/<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/apply" target="_blank" rel="external"><code>apply</code></a><br><code>fun.call(thisArg, arg1, arg2, ...)</code>以指定的<code>this</code>值来调用函数</p>
+</li>
+<li><p><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/bind" target="_blank" rel="external"><code>bind</code></a>：<br><code>fun.bind(thisArg[, arg1[, arg2[, ...]]])</code>  方法创建一个新的函数, 当被调用时，将其this关键字设置为提供的值，在调用新函数时，在实参之前提供一个给定的参数序列。</p>
+</li>
+<li><p>数组迭代方法中的<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach" target="_blank" rel="external"><code>thisArg</code></a><br><code>array.forEach(callback[, thisArg])</code> <code>thisArg</code>为<code>callback</code>中的<code>this</code>值。</p>
+</li>
+</ul>
+<h5 id="在声明函数时确定this的指向"><a href="#在声明函数时确定this的指向" class="headerlink" title="在声明函数时确定this的指向"></a>在声明函数时确定<code>this</code>的指向</h5><p>  我们可以通过<code>fun = fun.bind(this)</code>来使函数中的this指向固定。<br>  React中经常会这么做：<img src="http://p0.meituan.net/xgfe/ab34cfa7f56368b1a1f5cdc10f8ca0aa457647.png" alt="React 中通常会在constructor里绑定this"></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
+<li>普通变量：词法作用域 | 例外：<code>this</code></li>
+<li><code>this</code>指向的规律：指向直接调用者(dom/strict mode)  </li>
+<li><code>this</code>指向的例外：<code>bind</code>、<code>apply/call</code>、数组遍历方法<code>thisArg</code></li>
+<li>通过例外的例外使例外符合一般规律：<code>this.fn = this.fn.bind(this)</code></li>
+</ul>
+<h4 id="one-more-thing"><a href="#one-more-thing" class="headerlink" title="one more thing"></a>one more thing</h4><p>  在验证<code>this</code>指向的例外情况时，我试了下<code>with</code>会不会影响<code>this</code>的指向，结果是不会。不过，倒是发现了一点其他奇怪的情况，放个图大家看吧：<img src="http://p0.meituan.net/xgfe/ff3cb88b203bcfbd8e432d5b67365ade127542.png" alt="with的奇怪情况"><br>  究其原因，<code>null</code>是一个字面量，不可被赋值。<code>undefined</code>是一个特殊的预定义的全局变量，可以被赋值，不过正常情况下赋值会静默失败。而<code>let</code>根本就不是关键字，是合法的变量名。但是即使<code>let</code>被赋值，也不会影响它正常工作（<code>let</code>居然不是关键字！！！）。<img src="http://p1.meituan.net/xgfe/8fedaea7d3fbd2b0770cc5f390824ee679269.png" alt=""><br>  另一个彩蛋：<br>  <img src="http://vfile.meituan.net/xgfe/054512edd6754ca9011615ea9e854b7d92301.png" alt="undefined ?"><br>  因为刚才说过<code>undefined</code>是一个预定义的全局变量，给它赋值在非严格模式下会静默失败。但是在函数作用域中，我们可以重新声明一个叫undefined的变量，它和全局预定义的那个<code>undefined</code>并不是同一个变量，是可以被正常赋值的。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本文主要介绍了JS中的词法作用域及this的特殊性和一个小彩蛋。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="wangyue" scheme="http://xgfe.github.io/categories/wangyue/"/>
+    
+    
+      <category term="this" scheme="http://xgfe.github.io/tags/this/"/>
+    
+      <category term="词法作用域" scheme="http://xgfe.github.io/tags/%E8%AF%8D%E6%B3%95%E4%BD%9C%E7%94%A8%E5%9F%9F/"/>
+    
+      <category term="关键字" scheme="http://xgfe.github.io/tags/%E5%85%B3%E9%94%AE%E5%AD%97/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Vue生命周期总结</title>
+    <link href="http://xgfe.github.io/2017/10/31/lulutia/vue-lifecycle/"/>
+    <id>http://xgfe.github.io/2017/10/31/lulutia/vue-lifecycle/</id>
+    <published>2017-10-31T07:04:00.000Z</published>
+    <updated>2017-12-01T06:27:48.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>本文主要总结了vue中涉及到的生命周期，并且通过实际尝试得出了其执行顺序。</p>
+<a id="more"></a>
+<p>在进行Vue项目开发的过程中，会不可避免的接触它的生命周期。了解每个生命周期的特性及其使用场景对于快速进行项目开发相当重要。</p>
+<h3 id="全局守卫"><a href="#全局守卫" class="headerlink" title="全局守卫"></a>全局守卫</h3><p>一般基于Vue全家桶进行开发的项目都会采用vue-router来进行路由处理。在这种情况下，全局路由钩子将会是我们接触的生命周期第一站。这块主要涉及到以下两个方法：</p>
+<ul>
+<li><p>使用router.beforeEach注册一个全局前置守卫。直白的说就是当一个导航触发时，会按照顺序执行完毕此方法里的内容后再进行跳转[resolve后]。因此，在这个周期内特别适合做<strong>全局拦截</strong>，比如判断登陆状态。这个方法接受三个参数(from, to, next)，并且以调用next方法来作为resolve的标志。next方法可以传入以下几种参数：</p>
+<ul>
+<li>不传参数如next()：进行管道中的下一个钩子，执行完后成为resolve状态，进行正常跳转</li>
+<li>传入具体的路径如next(‘/‘): 直接跳转到传入的地址，当前导航会被中断，进行新的导航</li>
+<li>传入false如next(false): 中断当前导航，保持在当前的页面</li>
+<li>传入error如next(error): error是一个Error实例，导航会被终止且该错误会被传递给router.onError()注册过的回调</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">router.beforeEach(<span class="function">(<span class="params">to, <span class="keyword">from</span>, next</span>) =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'router.beforeEach'</span>)</div><div class="line">  next()</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<ul>
+<li>使用router.afterEach注册一个全局后置钩子，接受两个参数(from, to)。不接受next，也不改变导航状态</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">router.afterEach(<span class="function">(<span class="params">to, <span class="keyword">from</span>, next</span>) =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'router.afterEach'</span>)</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<h3 id="根组件"><a href="#根组件" class="headerlink" title="根组件"></a>根组件</h3><p>按照正常思维来思考，当路由确定后就涉及到具体页面的渲染。因此这部分涉及到以下几个实例的生命周期：</p>
+<ul>
+<li>beforeCreate：这个阶段主要执行初始化。可以访问实例本身，但是因为实例的配置还没完成，因此<strong>访问data或者method都是没用的</strong>。</li>
+<li>created：这个阶段已经进行了实例的配置，因此可以访问data、method和computed等了。但是因为挂载还没完成，所以<strong>直接访问this.$el是没用的</strong></li>
+<li>beforeMount：这个阶段是在挂载开始之前执行，之后就会走正常的渲染逻辑</li>
+<li>mounted：在这个阶段挂载已经完成，所以<strong>访问this.$el已经能够拿到元素了</strong></li>
+<li>beforeDestroy：这个阶段在实例销毁之前调用，因为是之前，所以在这个阶段还能够访问实例本身</li>
+<li>destroyed：这个阶段表示实例已经被销毁完成了。因此所有自己本身及其子组件的绑定，监听都会销毁</li>
+</ul>
+<p>上面是一个最基本的流程。加上前面的全局路由。我们可以看见其执行先后顺序如下：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline1.png" alt=""></p>
+<p>通过上面的展示，我们得到注意点，在从A页面跳转到B页面时，<strong>A页面的beforeDestroy和destroyed方法是比全局路由的beforeEach和afterEach执行的晚的</strong>。</p>
+<p>除了上面一个最基本的流程外，还有一个很重要的环节就是<strong>更新</strong>。关于这个，有下面两个生命周期阶段：</p>
+<ul>
+<li>beforeUpdate：数据更新时调用，发生在virtual dom进行对比和渲染之前。因此在这个阶段继续更改数据不会触发重新的渲染。但是这里有几个需要注意的地方如下：<ul>
+<li>如果只是单纯的数据变化，而这个变化并没有在template里面使用，则这个函数也不会触发。</li>
+<li>在beforeUpdate里面进行的数据更新，如果与之前的一样，则virtual dom对比结果为一样，此时不会重新触发beforeUpdate和updated；如果不一样，则会触发beforeUpdate和updated，但实际updated时更新的数据为后面的，证明在这个阶段继续更改数据不会触发重新的渲染；但是如果这个阶段的数据更新是异步的，比如延迟一秒更新，实际updated会触发两次并且数据不一样，表明触发了新的绘制</li>
+<li>在beforeUpdate里面重复修改同一个数据可能导致beforeUpdate函数的无限循环，应尽量避免</li>
+</ul>
+</li>
+<li>updated：virtual dom重新渲染和打补丁之后调用。所以如果在这个阶段再进行数据的更改会又重新触发beforeUpdate，恰巧如果beforeUpdate里面有同一数据的修改则很容易导致无限循环，所以最好避免这种事情发生。这个环节后，可以使用更新后的dom。</li>
+</ul>
+<p>在添加了上面两个方法后，现在我们可以看其执行顺序如下：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline02.png" alt=""></p>
+<h3 id="子组件"><a href="#子组件" class="headerlink" title="子组件"></a>子组件</h3><p>根组件的基本生命周期探讨到一阶段了，因为现在都是组件化的思维，因此现在很自然的就会想到子组件的生命周期在全局是处于何种位置的。<br>与根组件一样，子组件也拥有beforeCreate、created、beforeMount、mounted、beforeUpdate、updated、beforeDestroy、destroyed这几个生命阶段。现在我们来看在<strong>不执行更新操作</strong>时的执行顺序：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline03.png" alt=""></p>
+<p>由上可知:</p>
+<ul>
+<li>子组件的初始化晚于根组件，但是其挂载早于根组件，即当子组件都mounted后，根组件才会mounted。具体子组件的beforeCreated时间是在根组件的beforeMount之后</li>
+<li>子组件的销毁开始时间也晚于根组件，但是只有当子组件都destroyed后，根组件才destroyed了</li>
+</ul>
+<p>那加上更新操作时会怎样呢？我们构造了一个子组件，将根组件的msg作为props传入进去，然后根据这个prop构造一个计算属性，来作为子组件的template中的一个参数。注意这里一定要使用计算属性，如果直接使用data的话，是不会更新的：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">&lt;smallcomponent :msg="msg"/&gt;</div><div class="line">..........HelloWorld.vue.........</div><div class="line"> &lt;template&gt;</div><div class="line">  &lt;div&gt;</div><div class="line">    &lt;h1&gt;&#123;&#123;componentInfo&#125;&#125;&lt;/h1&gt;</div><div class="line">  &lt;/div&gt;</div><div class="line">&lt;/template&gt;</div><div class="line">...</div><div class="line"> props: &#123;</div><div class="line">      msg: &#123;</div><div class="line">        type: String</div><div class="line">      &#125;</div><div class="line">    &#125;,</div><div class="line">    computed: &#123;</div><div class="line">      componentInfo () &#123;</div><div class="line">        return this.msg</div><div class="line">      &#125;</div><div class="line">    &#125;,</div><div class="line">..........Time.vue........</div></pre></td></tr></table></figure>
+<p>在上面这种情况下，我们可以得出其生命周期如下，很明显，根组件是在子组件更新完毕后才更新完毕的：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/time04.png" alt=""></p>
+<h3 id="指令"><a href="#指令" class="headerlink" title="指令"></a>指令</h3><p>除了上面所说的子组件，根组件里面可能还会有指令存在，总的来说指令也会有其对应的生命周期，如下来自<a href="https://cn.vuejs.org/v2/guide/custom-directive.html#main" target="_blank" rel="external">vue官方文档</a>：</p>
+<ul>
+<li>bind：只调用一次，指令第一次绑定到元素时调用，用这个钩子函数可以定义一个在绑定时执行一次的初始化动作</li>
+<li>inserted：被绑定元素插入父节点时调用 (父节点存在即可调用，不必存在于 document 中)</li>
+<li>update：所在组件的VNode更新时调用，但是可能发生在其孩子的VNode更新之前</li>
+<li>componentUpdated：所在组件的VNode及其孩子的VNode全部更新时调用</li>
+<li>unbind：只调用一次，指令与元素解绑时调用</li>
+</ul>
+<p>我们实现了一个指令，将根组件的msg作为值传入指令中，在最基本的状态下，他们的生命周期流程如下：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline05.png" alt=""></p>
+<p>看来指令和子组件的状态十分类似，也是在根组件beforeMount后进行bind与inserted，然后根组件才执行mounted；在解绑时，也是在根组件beforeDestroy后执行，执行完后根组件才可能执行destroyed</p>
+<p>同样，如果这时，加上更新操作，其生命流程会如下所示，很明显，根组件是在指令更新完毕后才更新完毕的：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline06.png" alt=""></p>
+<p>之前我们单独的讨论了子组件和指令，那么如果它们在一起时生命周期的顺序又是怎样呢？通过实际实验，我们得出其顺序如下，当我们在根组件里先引入子组件再引入指令时其顺序如下左图，当我们先引人指令再引人子组件时其顺序如下右图：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline09.png" alt=""></p>
+<p>很明显，这个顺序是和引人组件或者指令的先后顺序有关～</p>
+<ul>
+<li>销毁阶段谁先引入谁先销毁</li>
+<li>更新阶段，都是指令的更新靠前</li>
+<li>创建阶段，谁先引入谁先进行初始化，但总的来说挂载都在初始化之后[无论谁的初始化]</li>
+</ul>
+<h3 id="组件内的守卫"><a href="#组件内的守卫" class="headerlink" title="组件内的守卫"></a>组件内的守卫</h3><p>在前面我们已经讨论过全局守卫、根组件、子组件和指令了。但实际上对于组件而言，它还存在组件内的守卫，<a href="https://router.vuejs.org/zh-cn/advanced/navigation-guards.html" target="_blank" rel="external">如下</a>：</p>
+<ul>
+<li>beforeRouteEnter：在渲染该组件的对应路由被 confirm 前调用，<strong>不能</strong>获取组件实例 this，因为当守卫执行前，组件实例还没被创建</li>
+<li>beforeRouteUpdate：在当前路由改变，但是该组件被复用时调用，可以访问组件实例this</li>
+<li>beforeRouteLeave：导航离开该组件的对应路由时调用，可以访问组件实例this</li>
+</ul>
+<p>我们在根组件添加了以上几个方法，可以看见整个生命周期如下所示：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline10.png" alt=""></p>
+<p>由上可知，beforeRouteEnter是在全局守卫之后调用，而beforeRouteLeave是在全局守卫之前调用。上面我们说到在beforeRouteEnter阶段是没法访问到this的，为了解决这个问题，可以通过传一个回调给next来访问组件实例。在导航被确认的时候执行回调，并且把组件实例作为回调方法的参数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">beforeRouteEnter (to, <span class="keyword">from</span>, next) &#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'beforeRouteEnter'</span>)</div><div class="line">    next(<span class="function"><span class="params">vm</span> =&gt;</span> &#123;</div><div class="line">      <span class="built_in">console</span>.log(<span class="string">'beforeRouteEnter的next'</span>)</div><div class="line">    &#125;)</div><div class="line">  &#125;,</div></pre></td></tr></table></figure>
+<p>那么这个的触发又是在生命周期的那一环呢？</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline11.png" alt=""></p>
+<p>很明显它会在完成mounted后马上触发。所以虽然beforeRouteEnter的执行时间很早，但是它的回调执行的时间比较晚，算是最接近dom渲染的一个周期了</p>
+<h3 id="路由独享的守卫"><a href="#路由独享的守卫" class="headerlink" title="路由独享的守卫"></a>路由独享的守卫</h3><p>除了上面我们讨论的全局守卫和组件内的守卫，实际还有一个路由独享的守卫，即可以在路由配置上直接定义beforeEnter守卫。具体使用如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> Router(&#123;</div><div class="line">  <span class="attr">routes</span>: [</div><div class="line">    &#123;</div><div class="line">      <span class="attr">path</span>: <span class="string">'/'</span>,</div><div class="line">      <span class="attr">name</span>: <span class="string">'Hello'</span>,</div><div class="line">      <span class="attr">component</span>: HelloWorld,</div><div class="line">      <span class="attr">beforeEnter</span>: <span class="function">(<span class="params">to, <span class="keyword">from</span>, next</span>) =&gt;</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'Exclusive beforeEnter'</span>)</div><div class="line">        next()</div><div class="line">      &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">      <span class="attr">path</span>: <span class="string">'/world'</span>,</div><div class="line">      <span class="attr">name</span>: <span class="string">'World'</span>,</div><div class="line">      <span class="attr">component</span>: Page2</div><div class="line">    &#125;</div><div class="line">  ]</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<p>通过实际情况我们可以得知，这个方法的调用会在全局守卫的beforeEach之后，而在组件内守卫的beforeRouteEnter之前，如下：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline12.png" alt=""></p>
+<h3 id="Vue-nextTick-amp-vm-nextTick"><a href="#Vue-nextTick-amp-vm-nextTick" class="headerlink" title="Vue.nextTick &amp; vm.$nextTick"></a>Vue.nextTick &amp; vm.$nextTick</h3><p>除了上面讨论的，还有两个和生命周期有关系的方法，如下：</p>
+<ul>
+<li><a href="https://cn.vuejs.org/v2/api/index.html#Vue-nextTick" target="_blank" rel="external">Vue.nextTick</a>：这是个全局API，在下次DOM更新循环结束之后执行延迟回调。在修改数据之后立即使用这个方法，获取更新后的DOM</li>
+<li><a href="https://cn.vuejs.org/v2/api/index.html#vm-nextTick" target="_blank" rel="external">vm.$nextTick</a>: 将回调延迟到下次DOM更新循环之后执行。在修改数据之后立即使用它，然后等待DOM更新。它跟全局方法Vue.nextTick一样，不同的是回调的this自动绑定到调用它的实例上</li>
+</ul>
+<p>我们将这部分加上去，得到整个这篇文章探讨的生命周期过程如下：</p>
+<p><img src="http://okzzg7ifm.bkt.clouddn.com/timeline13.png" alt=""></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a href="https://cn.vuejs.org/" target="_blank" rel="external">Vue.js官方文档</a></li>
+<li><a href="https://router.vuejs.org/zh-cn/index.html" target="_blank" rel="external">vue-router官方文档</a></li>
+<li><a href="https://segmentfault.com/a/1190000008879966" target="_blank" rel="external">vue生命周期探究（一）</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本文主要总结了vue中涉及到的生命周期，并且通过实际尝试得出了其执行顺序。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="lulutia" scheme="http://xgfe.github.io/categories/lulutia/"/>
+    
+    
+      <category term="Vue" scheme="http://xgfe.github.io/tags/Vue/"/>
+    
+  </entry>
+  
+  <entry>
     <title>用CSS实现各种图片滤镜效果演示</title>
     <link href="http://xgfe.github.io/2017/10/18/liuhongyu/filter/"/>
     <id>http://xgfe.github.io/2017/10/18/liuhongyu/filter/</id>
     <published>2017-10-18T13:46:00.000Z</published>
-    <updated>2017-10-25T09:38:08.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本演示关键使用了几个新型的CSS属性(background-blend-mode, mix-blend-mode, 和 filter)，利用这些属性，我们可以让同一张图片呈现出各种不可思议的神奇效果。</p>
 <a id="more"></a>
@@ -100,7 +339,7 @@ filter: contrast(175%) brightness(3%);
     <link href="http://xgfe.github.io/2017/10/18/lulutia/IntersectionObserver/"/>
     <id>http://xgfe.github.io/2017/10/18/lulutia/IntersectionObserver/</id>
     <published>2017-10-18T09:23:00.000Z</published>
-    <updated>2017-10-23T08:34:10.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文主要介绍了IntersectionObserver API，并且就如何将其用于数据埋点给出了尝试。</p>
 <a id="more"></a>
@@ -108,24 +347,24 @@ filter: contrast(175%) brightness(3%);
 <h4 id="IntersectionObserver-API介绍"><a href="#IntersectionObserver-API介绍" class="headerlink" title="IntersectionObserver API介绍"></a>IntersectionObserver API介绍</h4><p>关于IntersectionObserver API的官方文档<a href="https://w3c.github.io/IntersectionObserver/" target="_blank" rel="external">见此</a>。截止本文为止，其兼容性如下图所示:<br><img src="http://okzzg7ifm.bkt.clouddn.com/IntersectionObserver.png" alt="API 兼容性">简单的说IntersectionObserver让你知道什么时候observe的元素进入或者存在在root区域里了。下面我们来看下这个API的具体内容:</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 用构造函数生成观察者实例，回调函数是必须的，后面的配置对象是可选的</span></div><div class="line"><span class="keyword">var</span> observer = <span class="keyword">new</span> IntersectionObserver(<span class="function"><span class="params">changes</span> =&gt;</span> &#123;</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> change <span class="keyword">of</span> changes) &#123;</div><div class="line">    <span class="built_in">console</span>.log(change.time);               <span class="comment">// 相交发生时经过的时间</span></div><div class="line">    <span class="built_in">console</span>.log(change.rootBounds);         <span class="comment">// 表示发生相交时根元素可见区域的矩形信息，是一个对象值</span></div><div class="line">    <span class="built_in">console</span>.log(change.boundingClientRect); <span class="comment">// target.boundingClientRect()发生相交时目标元素的矩形信息，也是个对象值</span></div><div class="line">    <span class="built_in">console</span>.log(change.intersectionRect);   <span class="comment">// 根元素与目标元素相交时的矩形信息</span></div><div class="line">    <span class="built_in">console</span>.log(change.intersectionRatio);  <span class="comment">// 表示相交区域占目标区域的百分比，是一个0到1的值</span></div><div class="line">    <span class="built_in">console</span>.log(change.target);             <span class="comment">// 相交发生时的目标元素</span></div><div class="line">  &#125;</div><div class="line">&#125;, &#123;</div><div class="line">	<span class="attr">root</span>: <span class="literal">null</span>,</div><div class="line">  	<span class="attr">threshold</span>: [<span class="number">0</span>, <span class="number">0.5</span>, <span class="number">1</span>],</div><div class="line">  	<span class="attr">rootMargin</span>: <span class="string">"50px"</span></div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 实例属性</span></div><div class="line">observer.root</div><div class="line"></div><div class="line">observer.rootMargin</div><div class="line"></div><div class="line">observer.thresholds</div><div class="line"></div><div class="line"><span class="comment">// 实例方法</span></div><div class="line">observer.observe(target); <span class="comment">// 观察针对某个特定元素的相交事件</span></div><div class="line"></div><div class="line">observer.unobserve(target); <span class="comment">// 停止对某个特定元素的相交事件的观察</span></div><div class="line"></div><div class="line">observer.disconnect(); <span class="comment">// 停止对所有目标元素的阈值事件的观察，简单的说就是停用整个IntersectionObserver</span></div><div class="line"></div><div class="line"><span class="comment">// 除了上面三个实例方法，还有一个takeRecords()的方法，之后会详细介绍</span></div></pre></td></tr></table></figure>
 <p>IntersectionObserver API允许开发人员了解目标dom元素相对于intersection root的可见性。这个root可以通过实例属性获取。默认情况下它为null，此时它不是真正意义上的元素，它指视窗范围，因此只要视窗范围内的目标元素(当然是后代元素)滚入视窗时，就会触发回调函数[如果root元素不存在了，则执行其任何的observe都会出错]。下面举个栗子:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">			#target &#123;</div><div class="line">			   position: relative;</div><div class="line">			   top: calc(100vh + 500px);</div><div class="line">			   width: 100px;</div><div class="line">			   height: 100px;</div><div class="line">			   background: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(target);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="css"></span></div><div class="line">			<span class="selector-id">#target</span> &#123;</div><div class="line">			   <span class="attribute">position</span>: relative;</div><div class="line">			   <span class="attribute">top</span>: <span class="built_in">calc</span>(100vh + 500px);</div><div class="line">			   <span class="attribute">width</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">background</span>: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(target);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>上面的栗子中，当红色的块滚入滚出视窗，都会触发回调函数，回调函数在调用时会传入一个由IntersectionObserverEntry 对象组成的数组。每个IntersectionObserverEntry 对象包含对应的observed元素的更新信息，大概数据结构如下，其具体意思在第一段代码里有详细说明:<br><img src="http://okzzg7ifm.bkt.clouddn.com/intersectionObject.png" alt=""><br>我们可以在配置对象中将root改为具体的元素，此时当目标元素出现在root元素中时会触发回调，注意，在这种情况下相交可能发生在视窗下面。具体代码在下，感兴趣的孩子可以试一下:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">			#root &#123;</div><div class="line">				position: relative;</div><div class="line">				width: 400px;</div><div class="line">				height: calc(100vh + 200px);</div><div class="line">				background: lightblue;</div><div class="line">				overflow: scroll;</div><div class="line">			&#125;</div><div class="line">			#target &#123;</div><div class="line">			   position: absolute;</div><div class="line">			   top: calc(100vh + 800px);</div><div class="line">			   width: 100px;</div><div class="line">			   height: 100px;</div><div class="line">			   background: red;</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"root"</span>&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	<span class="attr">root</span>: root</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(target);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="css"></span></div><div class="line">			<span class="selector-id">#root</span> &#123;</div><div class="line">				<span class="attribute">position</span>: relative;</div><div class="line">				<span class="attribute">width</span>: <span class="number">400px</span>;</div><div class="line">				<span class="attribute">height</span>: <span class="built_in">calc</span>(100vh + 200px);</div><div class="line">				<span class="attribute">background</span>: lightblue;</div><div class="line">				<span class="attribute">overflow</span>: scroll;</div><div class="line">			&#125;</div><div class="line">			<span class="selector-id">#target</span> &#123;</div><div class="line">			   <span class="attribute">position</span>: absolute;</div><div class="line">			   <span class="attribute">top</span>: <span class="built_in">calc</span>(100vh + 800px);</div><div class="line">			   <span class="attribute">width</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">background</span>: red;</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"root"</span>&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	<span class="attr">root</span>: root</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(target);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>在上面一条中，回调函数打印出来的对象中有一个intersectionRatio值，这个值其实涉及到了整个API的核心功能：当目标元素和根元素相交的面积占目标元素面积的百分比到达或跨过某些指定的临界值时就会触发回调函数。因此相对的在配置对象里有一个threshold来对这个百分比进行配置，默认情况下这个值是[0]，注意里面的值不能在0-1之外，否则会报错。我们举个栗子如下:</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">......</div><div class="line">let ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">	<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">  		<span class="built_in">console</span>.log(entries);</div><div class="line">  &#125;, &#123;</div><div class="line">  	<span class="attr">threshold</span>: [<span class="number">0</span>, <span class="number">0.5</span>, <span class="number">1.0</span>]</div><div class="line">  &#125;</div><div class="line">);</div><div class="line"></div><div class="line">ele.observe(target);</div></pre></td></tr></table></figure>
 <p>在上面这个栗子中，我们设定了0，0.5，1.0这三个值，因此当交叉区域跨越0，0.5，1.0时都会触发回调函数。注意我这边的用词是跨越，而不是到达。因为会存在以下两种情况导致回调打印出来的intersectionRatio不为0，0.5和1.0.<br>其一： 浏览器对相交的检测是有时间间隔的。浏览器的渲染工作都是以帧为单位的，而IntersectionObserver是发生在帧里面的。因此假如你设定了[0,0.1,0.2,0.3,0.4,0.5]这个threshold，但是你的滚动过程特别快，导致所有的绘制在一帧里面结束了，此时回调只会挑最近的临界值触发一次。<br>其二： IntersectionObserver是异步的。在浏览器内部，当一个观察者实例观察到众多的相交行为时，它不会立即执行。关于IntersectionObserver的草案里面写明了其实现是基于requestIdleCallback()来异步的执行我们的回调函数的，并且规定了最大的延迟时间是100ms。关于这部分涉及到前面第一段代码里的一个实例方法takeRecords()。如果你很迫切的希望马上知道是否有相交，你不希望等待可能的100ms，此时你就能调用takeRecords()，此后你能马上获得包含IntersectionObserverEntry 对象的数组，里面有相交信息，如果没有任何相交行为发生，则返回一个空数组。但这个方法与正常的异步回调是互斥的，如果它先执行了则正常回调里面就没信息了，反之亦然。<br>除开上面的问题，如果目标元素的面积为0会产生什么情况呢？因为与0计算相交率是没有意义的，实际我们举个栗子：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">			#target &#123;</div><div class="line">			   position: relative;</div><div class="line">			   top: calc(100vh + 500px);</div><div class="line">			   width: 100px;</div><div class="line">			   height: 100px;</div><div class="line">			   background: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"img"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	<span class="attr">threshold</span>: [<span class="number">0</span>, <span class="number">0.5</span>, <span class="number">1.0</span>]</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(img);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="css"></span></div><div class="line">			<span class="selector-id">#target</span> &#123;</div><div class="line">			   <span class="attribute">position</span>: relative;</div><div class="line">			   <span class="attribute">top</span>: <span class="built_in">calc</span>(100vh + 500px);</div><div class="line">			   <span class="attribute">width</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">background</span>: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"img"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	<span class="attr">threshold</span>: [<span class="number">0</span>, <span class="number">0.5</span>, <span class="number">1.0</span>]</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(img);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>我们会看到，虽然我们设定了0.5这个阈值，但实际回调只会在0与1.0时触发。这是一种特殊的处理方式。</p>
 <p>上面我们讨论了整个API的核心功能，实际其内部遵循的逻辑如下: 每个观察者实例为所有的目标元素都维护着上次的相交率(previousThreshold)，在新执行Observe的时候会将previousThreshold置为0，之后每次检测到满足threshold的相交率，并且与previousThreshold不同，那么就会触发回调并将previousThreshold重置为这个新值。那么这里可能会有下面几个问题：<br>其一：既然初始值是0，如果阈值设置为0，且刚刚满足滚动到0的位置，回调还会触发吗？实际是会的，这是一种特例，与目标元素在根元素内部(此时相交率为1)滚动到刚刚要超出的位置依然会触发回调函数一样。但是这种情况可能导致一个问题，我们无法直接用intersectionRatio&gt;0来判断目标是否滚入了根元素，因为在慢速滚动下，当目标元素的上边与根元素的下边相交时，此时intersectionRatio=0并且触发了回调，之后当intersectionRatio&gt;0时并不会触发回调了(这里排除还有其他自定义阈值的情况)。这种情况下，可以自定义一个变量值来存展示状态，或者也可以定义一个无限接近0的threshold.<br>其二：如果一个元素初始化就在根元素内部了，然后再执行observe，依然会触发回调吗？会的，因为初始值默认为0，在下一次检测时更新为了实际的相交值。</p>
 <p>这里需要强调一点的是，我们的目标元素在Observe的时候可以不存在的[注意这里的不存在是指没有插入dom结构，但是元素本身是需要存在的]，只需要在相交发生时存在就行了，我们来举个栗子：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">			#target &#123;</div><div class="line">			   position: relative;</div><div class="line">			   top: calc(100vh + 500px);</div><div class="line">			   width: 100px;</div><div class="line">			   height: 100px;</div><div class="line">			   background: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	<span class="attr">threshold</span>: [<span class="number">0</span>, <span class="number">0.5</span>, <span class="number">1.0</span>]</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			<span class="keyword">let</span> img = <span class="built_in">document</span>.createElement(<span class="string">'div'</span>);</div><div class="line">			ele.observe(img);</div><div class="line">			setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">				<span class="built_in">document</span>.body.appendChild(img);</div><div class="line">			&#125;, <span class="number">5000</span>);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="css"></span></div><div class="line">			<span class="selector-id">#target</span> &#123;</div><div class="line">			   <span class="attribute">position</span>: relative;</div><div class="line">			   <span class="attribute">top</span>: <span class="built_in">calc</span>(100vh + 500px);</div><div class="line">			   <span class="attribute">width</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">background</span>: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	<span class="attr">threshold</span>: [<span class="number">0</span>, <span class="number">0.5</span>, <span class="number">1.0</span>]</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			<span class="keyword">let</span> img = <span class="built_in">document</span>.createElement(<span class="string">'div'</span>);</div><div class="line">			ele.observe(img);</div><div class="line">			setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">				<span class="built_in">document</span>.body.appendChild(img);</div><div class="line">			&#125;, <span class="number">5000</span>);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>同理，如果目标元素与根元素处于相交状态，但是在一段时间后目标元素不存在了(比如remove，或者display:none)了，那么此时依然会触发一次回调。但是如果本身就不处于相交状态，然后消失掉了，因为0-&gt;0没有变化，所以不会触发回调，具体如下面的栗子所示：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">			#target &#123;</div><div class="line">			   position: relative;</div><div class="line">			   top: calc(100vh + 500px);</div><div class="line">			   width: 100px;</div><div class="line">			   height: 100px;</div><div class="line">			   background: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(target);</div><div class="line">			setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">				<span class="built_in">document</span>.body.removeChild(target);</div><div class="line">			&#125;, <span class="number">5000</span>);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="css"></span></div><div class="line">			<span class="selector-id">#target</span> &#123;</div><div class="line">			   <span class="attribute">position</span>: relative;</div><div class="line">			   <span class="attribute">top</span>: <span class="built_in">calc</span>(100vh + 500px);</div><div class="line">			   <span class="attribute">width</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">background</span>: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(target);</div><div class="line">			setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">				<span class="built_in">document</span>.body.removeChild(target);</div><div class="line">			&#125;, <span class="number">5000</span>);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
 <h4 id="IntersectionObserver-API与iframe"><a href="#IntersectionObserver-API与iframe" class="headerlink" title="IntersectionObserver API与iframe"></a>IntersectionObserver API与iframe</h4><p>互联网上的很多小广告都是通过iframe嵌入的，而上面我们也说了现有的情况下很难获取iframe在顶层视窗内的曝光，但是使用IntersectionObserver API我们却可以做到这点。下面举个栗子：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">			#root &#123;</div><div class="line">			   position: relative;</div><div class="line">			   top: calc(100vh + 800px);</div><div class="line">			   width: 100px;</div><div class="line">			   height: 100px;</div><div class="line">			&#125;</div><div class="line">			#iframe &#123;</div><div class="line">				width: 600px;</div><div class="line">				height: 600px;</div><div class="line">				margin-bottom: 300px;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"root"</span>&gt;</span></div><div class="line">  			<span class="tag">&lt;<span class="name">iframe</span> <span class="attr">id</span>=<span class="string">"iframe"</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="xml"></span></div><div class="line">		  let iframeTemplate = `</div><div class="line">		    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>i am iframe<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		    <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="undefined"></span></div><div class="line">		      #target &#123;</div><div class="line">		        width: 500px;</div><div class="line">		        height: 500px;</div><div class="line">		        background: red;</div><div class="line">		      &#125;</div><div class="line">		      #target p &#123;</div><div class="line">		      	font-size: 90px;</div><div class="line">		      &#125;</div><div class="line">		    <span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">		    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></div><div class="line">		      <span class="keyword">let</span> observer = <span class="keyword">new</span> IntersectionObserver(<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">		        <span class="built_in">console</span>.log(entries)</div><div class="line">		      &#125;, &#123;</div><div class="line">		      	<span class="attr">threshold</span>: [<span class="number">0</span>,<span class="number">0.5</span>,<span class="number">1.0</span>]</div><div class="line">		      &#125;)</div><div class="line">		      observer.observe(target)</div><div class="line">		    &lt;\/script&gt;<span class="string">`</span></div><div class="line"></div><div class="line">		  iframe.src = URL.createObjectURL(new Blob([iframeTemplate], &#123;"type": "text/html"&#125;))</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="css"></span></div><div class="line">			<span class="selector-id">#root</span> &#123;</div><div class="line">			   <span class="attribute">position</span>: relative;</div><div class="line">			   <span class="attribute">top</span>: <span class="built_in">calc</span>(100vh + 800px);</div><div class="line">			   <span class="attribute">width</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">			&#125;</div><div class="line">			<span class="selector-id">#iframe</span> &#123;</div><div class="line">				<span class="attribute">width</span>: <span class="number">600px</span>;</div><div class="line">				<span class="attribute">height</span>: <span class="number">600px</span>;</div><div class="line">				<span class="attribute">margin-bottom</span>: <span class="number">300px</span>;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"root"</span>&gt;</span></div><div class="line">  			<span class="tag">&lt;<span class="name">iframe</span> <span class="attr">id</span>=<span class="string">"iframe"</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="xml"></span></div><div class="line">		  let iframeTemplate = `</div><div class="line">		    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>i am iframe<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		    <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="css"></span></div><div class="line">		      <span class="selector-id">#target</span> &#123;</div><div class="line">		        <span class="attribute">width</span>: <span class="number">500px</span>;</div><div class="line">		        <span class="attribute">height</span>: <span class="number">500px</span>;</div><div class="line">		        <span class="attribute">background</span>: red;</div><div class="line">		      &#125;</div><div class="line">		      <span class="selector-id">#target</span> <span class="selector-tag">p</span> &#123;</div><div class="line">		      	<span class="attribute">font-size</span>: <span class="number">90px</span>;</div><div class="line">		      &#125;</div><div class="line">		    <span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">		    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></div><div class="line">		      <span class="keyword">let</span> observer = <span class="keyword">new</span> IntersectionObserver(<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">		        <span class="built_in">console</span>.log(entries)</div><div class="line">		      &#125;, &#123;</div><div class="line">		      	<span class="attr">threshold</span>: [<span class="number">0</span>,<span class="number">0.5</span>,<span class="number">1.0</span>]</div><div class="line">		      &#125;)</div><div class="line">		      observer.observe(target)</div><div class="line">		    &lt;\/script&gt;<span class="string">`</span></div><div class="line"></div><div class="line">		  iframe.src = URL.createObjectURL(new Blob([iframeTemplate], &#123;"type": "text/html"&#125;))</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>从上面的栗子可以看出，使用此API不仅能够使iframe在视窗内出现时触发回调，而且threshold值同样能够起作用。这样一来，大大简化了此类情况下获取曝光的难度。</p>
 <h4 id="延迟加载与无限滚动"><a href="#延迟加载与无限滚动" class="headerlink" title="延迟加载与无限滚动"></a>延迟加载与无限滚动</h4><p>上面我们关于配置参数已经提到了root和threshold，实际上还有一个值：rootMargin。这个值实际就是给根元素添加了一个假想的margin值。其使用场景最普遍的是用于延迟加载。因为如果真的等目标元素与根元素相交的时候再进行加载图片等功能就已经晚了，所以有一个rootMargin值，这样等于根元素延伸开去了，目标元素只要与延伸部分相交就会触发回调，下面我们来继续举个栗子:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">			#root &#123;</div><div class="line">				width: 500px;</div><div class="line">				height: 800px;</div><div class="line">				overflow: scroll;</div><div class="line">				background-color: pink;</div><div class="line">			&#125;</div><div class="line">			#target &#123;</div><div class="line">			   position: relative;</div><div class="line">			   top: calc(100vh + 500px);</div><div class="line">			   width: 100px;</div><div class="line">			   height: 100px;</div><div class="line">			   background: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"root"</span>&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	<span class="attr">rootMargin</span>: <span class="string">'100px'</span>,</div><div class="line">			  	<span class="attr">root</span>: root</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(target);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span></div><div class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>intersectionObserve<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="css"></span></div><div class="line">			<span class="selector-id">#root</span> &#123;</div><div class="line">				<span class="attribute">width</span>: <span class="number">500px</span>;</div><div class="line">				<span class="attribute">height</span>: <span class="number">800px</span>;</div><div class="line">				<span class="attribute">overflow</span>: scroll;</div><div class="line">				<span class="attribute">background-color</span>: pink;</div><div class="line">			&#125;</div><div class="line">			<span class="selector-id">#target</span> &#123;</div><div class="line">			   <span class="attribute">position</span>: relative;</div><div class="line">			   <span class="attribute">top</span>: <span class="built_in">calc</span>(100vh + 500px);</div><div class="line">			   <span class="attribute">width</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">			   <span class="attribute">background</span>: red;</div><div class="line">			&#125;</div><div class="line">		<span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"root"</span>&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"target"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">			<span class="keyword">let</span> ele = <span class="keyword">new</span> IntersectionObserver(</div><div class="line">				<span class="function">(<span class="params">entries</span>) =&gt;</span> &#123;</div><div class="line">			  		<span class="built_in">console</span>.log(entries);</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	<span class="attr">rootMargin</span>: <span class="string">'100px'</span>,</div><div class="line">			  	<span class="attr">root</span>: root</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line"></div><div class="line">			ele.observe(target);</div><div class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>很明显，在上面的栗子中，目标元素并没有出现在根元素的视窗里的时候就已经触发回调了。</p>
 <p>整个API可以用来实现无限滚动和延迟加载，下面就分别举出两个简单的栗子来启发思路，更完善健壮的功能就交给看官自己去尝试了哦：<br>延迟加载的栗子：</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line">&lt;html lang="en"&gt;</div><div class="line">	&lt;head&gt;</div><div class="line">		&lt;meta charset="utf-8" /&gt;</div><div class="line">		&lt;title&gt;intersectionObserve&lt;/title&gt;</div><div class="line">		&lt;style type="text/css"&gt;</div><div class="line">			.img &#123;</div><div class="line">				height: 1000px;</div><div class="line">				overflow-y: hidden;</div><div class="line">			&#125;</div><div class="line">		&lt;/style&gt;</div><div class="line">	&lt;/head&gt;</div><div class="line">	&lt;body&gt;</div><div class="line">		&lt;ul&gt;</div><div class="line">			&lt;li class="img"&gt;</div><div class="line">				&lt;img src="" class="img-item" data-src="http://okzzg7ifm.bkt.clouddn.com/cat.png"/&gt;</div><div class="line">			&lt;/li&gt;</div><div class="line">			&lt;li class="img"&gt;</div><div class="line">				&lt;img src="" class="img-item" data-src="http://okzzg7ifm.bkt.clouddn.com/01.png"/&gt;</div><div class="line">			&lt;/li&gt;</div><div class="line">			&lt;li class="img"&gt;</div><div class="line">				&lt;img src="" class="img-item" data-src="http://okzzg7ifm.bkt.clouddn.com/virtualdom.png"/&gt;</div><div class="line">			&lt;/li&gt;</div><div class="line">			&lt;li class="img"&gt;</div><div class="line">				&lt;img src="" class="img-item" data-src="http://okzzg7ifm.bkt.clouddn.com/reactlife.png"/&gt;</div><div class="line">			&lt;/li&gt;</div><div class="line">		&lt;/ul&gt;</div><div class="line">		&lt;script type="text/javascript"&gt;</div><div class="line">			let ele = new IntersectionObserver(</div><div class="line">				(entries) =&gt; &#123;</div><div class="line">			  		entries.forEach((entry) =&gt; &#123;</div><div class="line">			  			if (entry.intersectionRatio &gt; 0) &#123;</div><div class="line">			  				entry.target.src = entry.target.dataset.src;</div><div class="line">			  			&#125;</div><div class="line">			  		&#125;)</div><div class="line">			  &#125;, &#123;</div><div class="line">			  	rootMargin: '100px',</div><div class="line">			  	threshold: [0.000001]</div><div class="line">			  &#125;</div><div class="line">			);</div><div class="line">			let eleArray = Array.from(document.getElementsByClassName('img-item'));</div><div class="line">			eleArray.forEach((item) =&gt; &#123;</div><div class="line">				ele.observe(item);</div><div class="line">			&#125;)</div><div class="line">		&lt;/script&gt;</div><div class="line">	&lt;/body&gt;</div><div class="line">&lt;/html&gt;</div></pre></td></tr></table></figure>
@@ -185,7 +424,7 @@ filter: contrast(175%) brightness(3%);
     <link href="http://xgfe.github.io/2017/09/22/Sudaxi/attributeStr1/"/>
     <id>http://xgfe.github.io/2017/09/22/Sudaxi/attributeStr1/</id>
     <published>2017-09-22T08:00:00.000Z</published>
-    <updated>2017-09-27T09:59:20.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文主要分析了富文本常用的属性设置，平时工作过程经常遇到一些有特殊需求的label、UITextField、UITextView。一般情况下，大家都喜欢直接用多个label来实现其不同的属性，很多人忽略了label本身的富文本属性。本文针对富文本进行了详细的介绍。<br><a id="more"></a></p>
 <p>首先先大概了解一下NSAttributedString 的21个属性。<br>常见的属性大概如下：<br><img src="http://p0.meituan.net/xgfe/8ac5ef6b34677319cfc020c8a1406681105850.jpg" width="600" height="600" alt="常见属性"></p>
@@ -357,7 +596,7 @@ self.showLa.attributedText = muAttributedStr;
     <link href="http://xgfe.github.io/2017/09/20/Young/DOM-size/"/>
     <id>http://xgfe.github.io/2017/09/20/Young/DOM-size/</id>
     <published>2017-09-20T08:37:00.000Z</published>
-    <updated>2017-09-27T09:59:20.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>最近数据平台有一个需求，页面滚动的时候，表格的表头悬停在页面顶部，实现的时候遇到了不少问题，也尝试了几种方案，下一篇blog会尝试分享一下，由于涉及到较多的DOM操作，尤其是各种尺寸位置属性，所以对这些尺寸属性的含义做了一些总结。</p>
 <a id="more"></a>
@@ -432,7 +671,7 @@ self.showLa.attributedText = muAttributedStr;
     <link href="http://xgfe.github.io/2017/09/17/ivanchou/layout-with-constraintlayout-by-programming/"/>
     <id>http://xgfe.github.io/2017/09/17/ivanchou/layout-with-constraintlayout-by-programming/</id>
     <published>2017-09-16T16:00:00.000Z</published>
-    <updated>2017-09-22T03:58:49.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>关于 ConstraintLayout 的 xml 方式布局的介绍有很多，但是你知道 ConstraintSet 吗？<br>本文对于 ConstraintLayout 采用代码进行布局的方式进行了介绍。</p>
 <a id="more"></a>
@@ -639,7 +878,7 @@ self.showLa.attributedText = muAttributedStr;
     <link href="http://xgfe.github.io/2017/09/07/felix/html-parsing-and-resources-load/"/>
     <id>http://xgfe.github.io/2017/09/07/felix/html-parsing-and-resources-load/</id>
     <published>2017-09-07T03:00:00.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>学习浏览器的内部工作原理将有助于您作出更明智的决策，并理解那些最佳开发实践的个中缘由。</p>
 <p>本文主要针对WebKit内核的浏览器。</p>
@@ -732,7 +971,7 @@ self.showLa.attributedText = muAttributedStr;
     <link href="http://xgfe.github.io/2017/09/07/huanglifen/html2image/"/>
     <id>http://xgfe.github.io/2017/09/07/huanglifen/html2image/</id>
     <published>2017-09-06T16:00:00.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>如何将HTML保存成高清图片？本文带你一探究竟。<br><a id="more"></a></p>
 <h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>现在流行于朋友圈分享的一些活动页，经常会玩这样的一个功能：将诸如测试之类的结果页保存成图片分享至朋友圈，以此来吸引用户参与，提高活动的pv和uv。</p>
@@ -867,7 +1106,7 @@ self.showLa.attributedText = muAttributedStr;
     <link href="http://xgfe.github.io/2017/08/28/DaisyXL/ES6/"/>
     <id>http://xgfe.github.io/2017/08/28/DaisyXL/ES6/</id>
     <published>2017-08-27T16:00:00.000Z</published>
-    <updated>2017-09-22T03:58:49.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文主要结合自己学习ES6的过程，说明了如何从零开始搭建一个ES6前端框架，并在大家都很关注的彩票业务中进行应用。</p>
 <a id="more"></a>
@@ -960,7 +1199,7 @@ npm install
     <link href="http://xgfe.github.io/2017/07/10/lulutia/immutable-RN-Redux/"/>
     <id>http://xgfe.github.io/2017/07/10/lulutia/immutable-RN-Redux/</id>
     <published>2017-07-10T12:07:00.000Z</published>
-    <updated>2017-09-22T06:11:01.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文主要介绍了如何对RN项目进行render count的优化，着重介绍了Immutable.js及其如何与Redux和React Native融合。</p>
 <a id="more"></a>
@@ -1163,7 +1402,7 @@ npm install
     <link href="http://xgfe.github.io/2017/06/28/lulutia/reactnative02/"/>
     <id>http://xgfe.github.io/2017/06/28/lulutia/reactnative02/</id>
     <published>2017-06-28T14:03:12.000Z</published>
-    <updated>2017-09-22T06:11:01.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文是React Native学习系列的第二篇，主要介绍了JSX、生命周期、以ScrollView为例讲解了官方组件、以BackHandler为例讲解了官方API。</p>
 <a id="more"></a>
@@ -1406,7 +1645,7 @@ npm install
     <link href="http://xgfe.github.io/2017/06/26/zero/Looper%E5%92%8CHandler%E5%92%8CHandlerThread/"/>
     <id>http://xgfe.github.io/2017/06/26/zero/Looper和Handler和HandlerThread/</id>
     <published>2017-06-25T16:00:00.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文主要分析了Looper，Handler和HandlerThread的主要源码部分。</p>
 <a id="more"></a>
@@ -1493,7 +1732,7 @@ npm install
     <link href="http://xgfe.github.io/2017/06/26/zero/OKIO%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     <id>http://xgfe.github.io/2017/06/26/zero/OKIO源码分析/</id>
     <published>2017-06-25T16:00:00.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文主要分析了OKIO源码中用到的Timeout，Buffer和设计模式。</p>
 <a id="more"></a>
@@ -1542,7 +1781,7 @@ npm install
     <link href="http://xgfe.github.io/2017/06/22/lulutia/reactnative01/"/>
     <id>http://xgfe.github.io/2017/06/22/lulutia/reactnative01/</id>
     <published>2017-06-22T13:12:00.000Z</published>
-    <updated>2017-09-22T06:11:01.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文是React Native学习系列的第一篇，主要介绍了React Native产生的背景、环境搭建、文件结构及如何使用Flex布局进行样式搭建。</p>
 <a id="more"></a>
@@ -1753,7 +1992,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/27/shsoul/SDWebImage%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/"/>
     <id>http://xgfe.github.io/2017/05/27/shsoul/SDWebImage源码解读/</id>
     <published>2017-05-27T11:48:29.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>SDWebImage库是iOS应用中常用的一个图片处理库，包括图片的下载和缓存等。非常好用。本文对其源码做了分析和总结。</p>
 <a id="more"></a>
@@ -1864,7 +2103,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/24/LexHuang/Inline-Caches/"/>
     <id>http://xgfe.github.io/2017/05/24/LexHuang/Inline-Caches/</id>
     <published>2017-05-24T03:30:00.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>本文来自Vyacheslav Egorov的<a href="http://mrale.ph/blog/2012/06/03/explaining-js-vms-in-js-inline-caches.html" target="_blank" rel="external">Explaining JavaScript VMs in JavaScript - Inline Caches</a>，其中的术语、代码请以原文为准。<br><a id="more"></a></p>
 <p>我知道如何实现用语言（或者语言的子集）来实现运行该语言虚拟机。如果我在学校或者有更多的时间我肯定会用JavaScript实现一个JavaScript虚拟机。实际上这并不会变成一个独一无二的JavaScript项目，因为蒙特利尔大学的人所造的<a href="https://github.com/Tachyon-Team/Tachyon/tree/master/source" target="_blank" rel="external">Tachyon</a>已经在某种程度上达到了同样的目的，但是我也有些我自己想要追求的点子。</p>
@@ -1945,7 +2184,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/15/jakii/cocos2d-x%20introduction/"/>
     <id>http://xgfe.github.io/2017/05/15/jakii/cocos2d-x introduction/</id>
     <published>2017-05-15T08:30:00.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<p><img src="http://oprp8vydn.bkt.clouddn.com/2017-05-15-14948390188781.jpg" alt=""></p>
 <p>cocos2d-x是一个广泛流行的2D跨平台游戏引擎。采用c++作为开发语言。而cocos2d-Js是cocos2d-x采用脚本绑定技术实现的采用JavaScript语言作为开发语言的版本。</p>
@@ -2066,7 +2305,7 @@ npm install
     <link href="http://xgfe.github.io/2017/05/04/y8n/understand-virtual-dom/"/>
     <id>http://xgfe.github.io/2017/05/04/y8n/understand-virtual-dom/</id>
     <published>2017-05-04T04:30:13.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
+    <updated>2017-10-26T04:06:48.000Z</updated>
     
     <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>使用过React的同学对于Virtual DOM并不陌生，作为React的重要核心概念，Virtual DOM凭借其高效的diff算法，让我们不用关心应用的性能问题，毫无顾忌地修改各种数据状态。在实际的开发中，我们并不需要关注Virtual DOM在一个框架中是如何运行的，但是理解Virtual DOM的实现原理却是非常有必要的，同时也有助于我们更加深入React。<br><a id="more"></a></p>
 <h2 id="一、前端应用状态管理"><a href="#一、前端应用状态管理" class="headerlink" title="一、前端应用状态管理"></a>一、前端应用状态管理</h2><p>在日益复杂的前端应用中，状态管理是一个经常被提及的话题，从早期的刀耕火种时代到jQuery，再到现在流行的MVVM时代，状态管理的形式发生了翻天覆地的变化，我们再也不用维护茫茫多的事件回调、监听来更新视图，转而使用使用双向数据绑定，只需要维护相应的数据状态，就可以自动更新视图，极大提高开发效率。</p>
@@ -2138,690 +2377,6 @@ npm install
       <category term="react" scheme="http://xgfe.github.io/tags/react/"/>
     
       <category term="virtual dom" scheme="http://xgfe.github.io/tags/virtual-dom/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>web worker详解</title>
-    <link href="http://xgfe.github.io/2017/05/03/LexHuang/web-worker/"/>
-    <id>http://xgfe.github.io/2017/05/03/LexHuang/web-worker/</id>
-    <published>2017-05-03T03:30:00.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
-    
-    <content type="html"><![CDATA[<p><img src="http://p0.meituan.net/kuailv/678b764c4d0bff4629f20e748357481c29564.jpg" alt="" title="web worker"><br>Web Workers 是一种不在页面线程而是在后台线程中执行脚本的技术。Web Workers 的优点在于可以将计算密集型和I/O密集型的操作放在一个单独的后台线程中执行，进而使得主线程（通常是UI线程）能够不被阻塞，也不会被减缓。</p>
-<p>本博客主要内容分为七部分：</p>
-<ul>
-<li>Web Worker 概念及使用</li>
-<li>Web worker的生命周期和处理模型</li>
-<li>错误处理</li>
-<li>数据传输</li>
-<li>线程安全</li>
-<li>内容安全策略</li>
-</ul>
-<a id="more"></a>
-<h2 id="Web-Workers-概念"><a href="#Web-Workers-概念" class="headerlink" title="Web Workers 概念"></a>Web Workers 概念</h2><p>所谓的 worker 就是用一个构造器创建的（例如<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Worker/Worker" target="_blank" rel="external">Worker()</a>） ，用来运行一个 JavaScript 文件的函数 — 这个文件包含了将要在 worker 线程中执行的代码<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">worker = <span class="keyword">new</span> Worker(scriptURL [, options ])</div></pre></td></tr></table></figure></p>
-<p><a href="https://html.spec.whatwg.org/multipage/workers.html#dedicated-workers-and-the-worker-interface" target="_blank" rel="external">options</a>可以被用来确保worker的全局环境是否支持Javascript模块{type:’module’}，默认为’class’。在共享worker中还可以通过指定<strong>credentials</strong>来制定<strong>scriptURL</strong>的被获取方式。</p>
-<p>worker 脚本将在一个与当前 window 对象不同的全局上下文环境中运行，根据检测到的 worker 的类型有所不同,会生成不同的上下文对象。在<code>专属worker</code>(Dedicated Worker)中这个上下文环境由一个叫做 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/DedicatedWorkerGlobalScope" target="_blank" rel="external">DedicatedWorkerGlobalScope</a> 的对象来表示。在<code>共享worker</code>（Shared Worker）则会使用<a href="https://developer.mozilla.org/en-US/docs/Web/API/SharedWorkerGlobalScope" target="_blank" rel="external">SharedWorkerGlobalScope</a>。所有上下文对象都继承于<a href="https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope" target="_blank" rel="external">WorkerGlobalScope</a></p>
-<p>你可以在你的 worker 线程中运行任意的javascript代码，除某些特殊情况外。比如，你不能直接在 worker 线程中操纵 DOM 元素, 或者使用某些 window 对象中默认的方法和属性。 但是 window 对象中很多的方法和属性你是可以使用的，包括 WebSockets，以及诸如 IndexedDB 和 FireFox OS 中独有的 Data Store API 这一类数据存储机制。具体的可用api和函数列表如下：</p>
-<ul>
-<li>对比不同类型的workers所拥有的属性和类型:</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>function</th>
-<th>Dedicated workers</th>
-<th>Shared workers</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>atob()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>btoa()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>clearInterval()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>clearTimeout()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>dump()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>setInterval()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>setTimeout()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>importScripts()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>close()</td>
-<td>yes, on WorkerGlobalScope</td>
-<td>yes, on WorkerGlobalScope</td>
-</tr>
-<tr>
-<td>postMessage()</td>
-<td>yes, on DedicatedWorkerGlobalScope</td>
-<td>no</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>worker中可用的web API：<ul>
-<li>Channel Messaging API</li>
-<li>Console API</li>
-<li>CustomEvent</li>
-<li>DOMRequest and DOMCursor</li>
-<li>FileReader</li>
-<li>FileReaderSync</li>
-<li>FormData</li>
-<li>ImageData</li>
-<li>IndexedDB</li>
-<li>Notifications</li>
-<li>Performance</li>
-<li>Promise</li>
-<li>Worker</li>
-<li>WorkerGlobalScope</li>
-<li>WorkerLocation</li>
-<li>WorkerNavigator</li>
-<li>XMLHttpReques</li>
-</ul>
-</li>
-</ul>
-<p>可见，web worker可以执行所有常见的I/O操作。</p>
-<hr>
-<p>以上api去除了实验阶段api和非w3c标准api。</p>
-<hr>
-<p> 在专属worker里，主线程和 worker 线程之间通过消息机制来互相传输信息：两端都使用 postMessage() 方法来发送信息, 并且通过 onmessage 这个事件处理函数来接收信息。 （传递的信息包含在 Message 这个事件的数据属性内) 。数据的交互是通过传递副本，而不是直接共享数据。</p>
-<p> 共享worker［Shared workers ］指的是那些可以被多个运行在不同窗口的脚本所共享的worker，比如IFrames等，只要这些窗口和该共享worder同源。该类worker比专属workers更复杂些————脚本们利用处于活动中的端口与主线程们进行通信。</p>
-<hr>
-<p> 本质上专属worker也是通过端口来与主线程进行通信，但是由于双方端口是一致的，因此将此特性隐藏了。</p>
-<hr>
-<p> 一个 worker 也可以生成新的 worker，只要这些 worker 和它们父页面的宿主同源。  此外，worker 可以通过 XMLHttpRequest 来进行网络通信，只是 XMLHttpRequest 的 responseXML 和 channel 这两个属性的值将总是 null 。</p>
-<h2 id="使用web-worker"><a href="#使用web-worker" class="headerlink" title="使用web worker"></a>使用web worker</h2><hr>
-<p>随着多核计算机逐渐普及，将复杂计算的任务拆解成多个子任务分配给worker是一个非常有效的办法，这样可以在多处理器内核上运算这些任务。</p>
-<hr>
-<h3 id="Worker-特征检测"><a href="#Worker-特征检测" class="headerlink" title="Worker 特征检测"></a>Worker 特征检测</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (<span class="built_in">window</span>.Worker) &#123;</div><div class="line">...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="专属worker"><a href="#专属worker" class="headerlink" title="专属worker"></a>专属worker</h3><p>以下以MDN的<a href="https://mdn.github.io/simple-web-worker/" target="_blank" rel="external">Basic dedicated worker example</a>为例。它允许你输入两个数字相乘。两个乘数被送到一个专属worker中，运算得到乘积后，在返回到原页面并展示出来。</p>
-<h4 id="生成一个专属worker"><a href="#生成一个专属worker" class="headerlink" title="生成一个专属worker"></a>生成一个专属worker</h4><p>创建一个新的 <strong>专属worker</strong> 很简单。你只需要调用 Worker() 构造器, 并指定一个worker线程需要执行的脚本的URI:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**main.js**/</span></div><div class="line"><span class="keyword">var</span> myWorker = <span class="keyword">new</span> Worker(<span class="string">"worker.js"</span>);</div></pre></td></tr></table></figure></p>
-<h4 id="往dedicated-worker里发送消息以及从dedicated-worker发出消息"><a href="#往dedicated-worker里发送消息以及从dedicated-worker发出消息" class="headerlink" title="往dedicated worker里发送消息以及从dedicated worker发出消息"></a>往dedicated worker里发送消息以及从dedicated worker发出消息</h4><p>worker的奇妙之处在于 postMessage()方法和onmessage 事件处理程序。当你想要传递一个消息到worker,你需要像这样传递消息:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**main.js**/</span></div><div class="line">first.onchange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  myWorker.postMessage([first.value,second.value]);</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Message posted to worker'</span>);</div><div class="line">&#125;</div><div class="line">second.onchange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  myWorker.postMessage([first.value,second.value]);</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Message posted to worker'</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这里我们有两个<code>&lt;input&gt;</code>元素来代表两个乘数; 当它们的值变化时, 会通过myWorker.postMessage([first.value,second.value])传递新值给worker, 数组意味着. 你可以往消息里塞入非常多的信息。<br>在worker里,我们可以通过编写一个事件回调函数来响应接受到的消息:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**worker.js**/</span></div><div class="line">onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Message received from main script'</span>);</div><div class="line">  <span class="keyword">var</span> workerResult = <span class="string">'Result: '</span> + (e.data[<span class="number">0</span>] * e.data[<span class="number">1</span>]);</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Posting message back to main script'</span>);</div><div class="line">  postMessage(workerResult);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>onmessage 处理程序允许我们在接受消息时运行一些代码，并在事件对象的data属性里访问传入的消息。这里我们简单的讲两个数字相乘，并再次使用postMessage()来回传结果回主线程。</p>
-<p>回到主线程，我们再次使用onmessage 来响应来自于worker的消息：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**main.js**/</span></div><div class="line">myWorker.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">  result.textContent = e.data;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Message received from worker'</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>这里我们抓取事件data属性里的消息并设置到文档内容上展示出来。</p>
-<hr>
-<ul>
-<li><p>注意: 传入到Worker 构造器里的参数必须遵循同源策略。</p>
-<p>  浏览器制造商对于“同源”所包含的概念有争议；Gecko 10.0 (Firefox 10.0 / Thunderbird 10.0 / SeaMonkey 2.7) 以及之后的版本允许 data URIs，而Internet Explorer 10禁止Blob URIs作为用于worker的合法的脚本。</p>
-</li>
-<li><p>注意:  注意到，再主线程里onmessage 和postMessage()必须挂在Worker对象上 ，但是在worker内部不需要。这是因为在worker内部，该worker本身就有效的充当了全局作用域</p>
-</li>
-<li><p>注意: 当主线程和worker之间传递消息时，传递的是消息的副本，而不是共享该消息。</p>
-</li>
-</ul>
-<hr>
-<h4 id="关闭一个-worker"><a href="#关闭一个-worker" class="headerlink" title="关闭一个 worker"></a>关闭一个 worker</h4><ul>
-<li><p>terminate()</p>
-<p>  如果想在主线程里立刻关闭正在运行的worker，只要调用worker的terminate 方法就行：</p>
-  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**main.js**/</span></div><div class="line">myWorker.terminate();</div></pre></td></tr></table></figure>
-<p>  该worker线程会被立刻杀死而不会获得任何完成操作或者垃圾回收的机会。</p>
-</li>
-<li><p>close()</p>
-<p>  在 worker 线程内部, workers 可以通过调用自己全局作用域下的close 方法来关闭自身:</p>
-  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**worker.js**/</span></div><div class="line">self.close();</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>尽量使用close在worker内关闭自己，这样可以让线程被安全关闭且更适当地释放资源。具体算法参考下一节。</p>
-<h4 id="生成子worker"><a href="#生成子worker" class="headerlink" title="生成子worker"></a>生成子worker</h4><p>如果需要，worker可以产生更多的worker。所谓的子worker必须是和父页面同源。而且，该子worker的URIs 的解析是相对于父worker的地址而不是其所属页面的。这简化了worker的依赖追踪。</p>
-<h4 id="引入脚本和库"><a href="#引入脚本和库" class="headerlink" title="引入脚本和库"></a>引入脚本和库</h4><p>Worker现场可以访问全局函数，importScripts()，让worker引入脚本。它接受0个或者更多要导入的资源的URI作为参数；以下所有例子都是有效的：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">importScripts();                         <span class="comment">/* imports nothing */</span></div><div class="line">importScripts(<span class="string">'foo.js'</span>);                 <span class="comment">/* imports just "foo.js" */</span></div><div class="line">importScripts(<span class="string">'foo.js'</span>, <span class="string">'bar.js'</span>);       <span class="comment">/* imports two scripts */</span></div><div class="line">importScripts(<span class="string">'//example.com/hello.js'</span>); <span class="comment">/* You can import scripts from other origins */</span></div></pre></td></tr></table></figure>
-<p>浏览器加载列出的所有脚本并且执行它们。之后所有脚本里的全局对象都能被worker所使用。如果脚本加载失败则会抛出一个<code>NETWORK_ERROR</code>错误，并且之后的代码将不会被执行。之前已经执行的代码（包括使用 window.setTimeout()延迟执行的代码）将继续执行。在importScripts() 方法之后的函数声明会被保留，因为它们始终比其他代码先解析。</p>
-<hr>
-<ul>
-<li>注意: 脚本下载是无序的，但是执行顺序则根据传递到importScripts()里的顺序。这是异步完成的；在所有脚本都被下载和执行前，importScripts()不会返回。</li>
-</ul>
-<hr>
-<h3 id="共享worker"><a href="#共享worker" class="headerlink" title="共享worker"></a>共享worker</h3><p>一个 <strong>共享worker</strong> 可以被多个脚本所访问 — 即使它们正在被多个不同的窗口访问着, 比如多个iframe乃至多个worker。 在这一节我们将会讨论 <a href="https://mdn.github.io/simple-shared-worker/" target="_blank" rel="external">Basic shared worker example</a>里的代码: 它和基础专属worker的例子很类似,除了它有两个函数可以被不同的脚本文件处理：两数相乘和平方一个数字。两个脚本使用同一个worker 来完成所需的实际计算。</p>
-<p>这里我们将重点分析专属和共享worker之间的不同。注意到在这个例子里我们有两个HTML页面，每个页面都有JavaScript 访问同一个worker文件。</p>
-<hr>
-<ul>
-<li>注意: 如果共享worker可以被来自不同的浏览上下文所访问，那这些浏览上下文必须时完全同源的（同协议、域名和端口）。</li>
-<li>注意: 在火狐里,共享worker不能在一个隐私模式下的窗口和一个非隐私模式下的窗口之间共享 (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1177621" target="_blank" rel="external">bug 1177621</a>)。</li>
-</ul>
-<hr>
-<h4 id="生成一个-shared-worker"><a href="#生成一个-shared-worker" class="headerlink" title="生成一个 shared worker"></a>生成一个 shared worker</h4><p>与生成一个新dedicated worker类似, 但是不同的是构造器的名称是<code>SharedWorker</code> — 每个都得使用与下面类似的方式启动worker:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> myWorker = <span class="keyword">new</span> SharedWorker(<span class="string">"worker.js"</span>);</div></pre></td></tr></table></figure></p>
-<p>一个最大的不同点在于使用共享worker你必须通过一个<code>port对象</code>来通信——明确指定一个端口，这样脚本们可以通过它来与worker通信。(在专属worker偷偷完成了这一点)。</p>
-<p>端口链接需要通过隐式地使用<code>onmessage</code>事件处理程序或者显式地在传递任何消息前使用 start()方法。只有当消息事件通过是addEventListener()接通的情况下需要调用start()。</p>
-<p>当使用<code>start()</code>方法来开启端口连接时, 如果需要双向通信，则该方法既要在主线程中调用，也需要在woker线程中调用。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// called in parent thread</span></div><div class="line">myWorker.port.start();</div><div class="line"></div><div class="line"><span class="comment">// called in worker thread, assuming the port variable references a port</span></div><div class="line">port.start();</div></pre></td></tr></table></figure></p>
-<h4 id="往shared-worker里发送消息以及从shared-worker发出消息"><a href="#往shared-worker里发送消息以及从shared-worker发出消息" class="headerlink" title="往shared worker里发送消息以及从shared worker发出消息"></a>往shared worker里发送消息以及从shared worker发出消息</h4><p>现在消息可以像之前一样传递到worker里了,但是postMessage() 方法必须通过port对象来调用 :</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">squareNumber.onchange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  myWorker.port.postMessage([squareNumber.value,squareNumber.value]);</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Message posted to worker'</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>现在, 将目光转向我们的worker。这里也发生了些复杂的事情:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**worker.js**/</span></div><div class="line">onconnect = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> port = e.ports[<span class="number">0</span>];</div><div class="line"></div><div class="line">    port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">        <span class="keyword">var</span> workerResult = <span class="string">'Result: '</span> + (e.data[<span class="number">0</span>] * e.data[<span class="number">1</span>]);</div><div class="line">        port.postMessage(workerResult);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>首先, 我们使用一个<code>onconnect事件处理程序</code>来在发生一个端口连接的时候去激活代码(比如，当父线程里设置了一个<code>onmessage事件处理程序</code>，或者在父线程里<code>start()</code>方法被显式调用)。</p>
-<p>我们使用该事件的<code>ports属性</code>来获取端口并且将它存到一个变量里。</p>
-<p>之后，我们增加一个消息处理程序在该端口上来做计算并返回给主线程。设置该消息处理程序在worker线程里同样隐式打开了到父线程的端口连接，所以无需调用 <code>port.start()</code>。</p>
-<p>最后, 回到main 脚本, 我们处理worker返回的消息:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">myWorker.port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">  result2.textContent = e.data;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Message received from worker'</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>当一个消息通过端口回到主线程时，我们检查结果类型，然后插入到文档里显示出来。</p>
-<h2 id="web-worker的生命周期和处理模型"><a href="#web-worker的生命周期和处理模型" class="headerlink" title="web worker的生命周期和处理模型"></a>web worker的生命周期和处理模型</h2><h3 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h3><p>web worker之间的通信必须依赖于浏览器的上下文环境，并且通过它们的 MessagePort 对象实例传递消息。每个web worker的全局作用域都拥有这些线程的端口列表，这些列表包括了所有线程使用到的 MessagePort 对象。在专用线程的情况下，这个列表还会包含隐式的 MessagePort 对象。</p>
-<p>每个web worker的全局作用域对象 WorkerGlobalScope 还会有一个web worker的线程列表，在初始化时这个列表为空。当web worker被创建的时候或者拥有父web worker的时候，它们就会被填充进来。</p>
-<p>最后，每个web worker的全局作用域对象 WorkerGlobalScope 还拥有这个线程的文档对象列表，在初始化时这个列表为空。当web worker被创建的时候，文档对象就会被填充进来。无论何时当一个文档对象被丢弃的时候，它就会从这个文档对象列表里面被删除。<br>在web worker的生命周期中，定义了下面四种不同类型的线程名称，用以标识它们在线程的整个生命周期中的不同状态：</p>
-<ul>
-<li>当一个web worker的<code>文档列表</code>不为空的时候，这个web worker会被称之为<code>许可线程</code>。</li>
-<li>当一个web worker的<code>文档列表</code>中的任何一个对象都是处于完全活动状态的时候，这个web worker会被称之为<code>需要激活线程</code>。</li>
-<li>当一个web worker是许可线程并且拥有计数器或者拥有数据库事务或者拥有网络连接或者它的web worker列表不为空的时候，这个web worker会被称之为<code>受保护的线程</code>。</li>
-<li>当一个web worker是一个非需要激活线程同时又是一个许可线程的时候，这个web worker会被称之为<code>可挂起线程</code>。</li>
-</ul>
-<p>由于 W3C 的 Web Worker 规范目前还是处于完善阶段，没有形成最终的规范。</p>
-<h3 id="处理模型"><a href="#处理模型" class="headerlink" title="处理模型"></a>处理模型</h3><p><img src="http://p1.meituan.net/kuailv/1aae5f5a2fd5220d14bf377ffd82937840137.png" alt="" title="web worker执行模型"></p>
-<p>当web worker被一个具有 URL 参数的构造函数创建的时候，它需要有一系列的处理流程来处理和记录它本身的数据和状态。<a href="https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model" target="_blank" rel="external">W3C的web worker的处理模型</a>如下：</p>
-<blockquote>
-<p>当一个用户代理将要通过：Worker 或者 SharedWorker等worker对象、<a href="https://url.spec.whatwg.org/#concept-url" target="_blank" rel="external">URL</a> url, <a href="https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object" target="_blank" rel="external">环境设置对象</a><code>外部设置</code>, <a href="https://html.spec.whatwg.org/multipage/comms.html#messageport" target="_blank" rel="external">MessagePort</a> <code>外部端口</code>, 一个<a href="https://html.spec.whatwg.org/multipage/workers.html#workeroptions" target="_blank" rel="external">WorkerOptions</a> 字典 <code>options参数</code>, 和一个可选字符串<code>name</code> 来为一个脚本 <strong>运行一个线程</strong> 时，它必须执行以下步骤：（当worker是一个共享worker时，name始终会被提供。）</p>
-<ol>
-<li>创建一个独立的并行处理环境，并且在这个环境里面异步的运行下面的步骤。<hr>
-对于那些用于计时的API来说，这是官方规定的worker创建时刻。<hr>
-</li>
-<li>让<code>is shared</code>设置为true如果worker是一个 <code>SharedWorker</code> 对象, 反之为 false。</li>
-<li>让<code>docs</code>为<a href="https://html.spec.whatwg.org/multipage/workers.html#list-of-relevant-document-objects-to-add" target="_blank" rel="external">相关的Document对象组成的列表</a>并用来添加给定的外部设置。</li>
-<li>让父 worker 的<code>parent worker global scope</code>为 null.</li>
-<li>如果外部设置的<a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-global" target="_blank" rel="external">全局对象</a>(即<a href="https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object" target="_blank" rel="external">环境设置对象</a>)是一个 WorkerGlobalScope 对象（比如我们在创建嵌套worker时），设置<code>parent worker global scope</code>到外部设置的<a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-global" target="_blank" rel="external">全局对象上</a>。</li>
-<li><p>通过以下自定义项来调用JavaScript <a href="https://tc39.github.io/ecma262/#sec-initializehostdefinedrealm" target="_blank" rel="external">InitializeHostDefinedRealm()</a>抽象操作 </p>
-<ul>
-<li><p>对于全局对象，如果<code>is shared</code>是true,创建一个新 SharedWorkerGlobalScope对象。否则，创建一个新DedicatedWorkerGlobalScope对象。并使其成为该worker的全局作用域对象。</p>
-</li>
-<li><p>让区域执行上下文（<a href="https://tc39.github.io/ecma262/#realm" target="_blank" rel="external">realm execution context</a>,概念上类似于一个ECMAScript 全局环境）成为所创建的<a href="https://tc39.github.io/ecma262/#sec-execution-contexts" target="_blank" rel="external">JavaScript执行上下文</a>。</p>
-</li>
-</ul>
-</li>
-<li>利用上述的区域执行上下文和外部设置来<a href="https://html.spec.whatwg.org/multipage/workers.html#set-up-a-worker-environment-settings-object" target="_blank" rel="external">初始化一个worker环境设置对象</a>，并且将返回的设置对象设置为<code>内部设置</code>。</li>
-<li>如果<code>is shared</code>为true, 则:<ol>
-<li>设置worker全局作用域的<a href="https://html.spec.whatwg.org/multipage/workers.html#concept-sharedworkerglobalscope-constructor-origin" target="_blank" rel="external">constructor origin属性</a>值为外部设置的源。</li>
-<li>设置worker全局作用域的<a href="https://html.spec.whatwg.org/multipage/workers.html#concept-sharedworkerglobalscope-constructor-url" target="_blank" rel="external">constructor url属性</a>的值为外部设置的url。</li>
-<li>设置worker全局作用域的<a href="https://html.spec.whatwg.org/multipage/workers.html#concept-sharedworkerglobalscope-constructor-url" target="_blank" rel="external">name属性</a>的值为外部设置的name。</li>
-</ol>
-</li>
-<li>把<a href="https://fetch.spec.whatwg.org/#concept-request-destination" target="_blank" rel="external">destination</a>值设置为”sharedworker”如果<code>is shared</code>为true，否则为”worker”。</li>
-<li><p>通过options参数的type成员的值来获取脚本:</p>
-<ul>
-<li><p>“classic”<br>  利用指定的url来获取经典的worker脚本、外部设置、 destination和内部设置。</p>
-</li>
-<li><p>“module”<br>利用指定的url来获取脚本图、外部设置、 destination、options参数的credentials成员值和<code>内部设置</code>。</p>
-</li>
-</ul>
-<p>两种情况下，对请求<a href="https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-perform-fetch" target="_blank" rel="external">执行fetch操作</a>，在<a href="https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-is-top-level" target="_blank" rel="external">is top-level flag</a>被设置后将以下步骤：</p>
-<ol>
-<li>设置请求的 <a href="https://fetch.spec.whatwg.org/#concept-request-reserved-client" target="_blank" rel="external">reserved client</a>（即环境） 为<code>内部设置</code>。</li>
-<li><a href="https://fetch.spec.whatwg.org/#concept-fetch" target="_blank" rel="external">Fetch</a> 请求,并且为了执行残留的步骤而异步等待，残留的步骤作为fetch的<a href="https://fetch.spec.whatwg.org/#concept-response-url" target="_blank" rel="external">process response</a>对应<a href="https://fetch.spec.whatwg.org/#concept-response" target="_blank" rel="external">response</a>（fetch的结果）的一部分。</li>
-<li>设置<code>worker全局作用域</code>的 <a href="https://html.spec.whatwg.org/multipage/workers.html#concept-workerglobalscope-url" target="_blank" rel="external">url</a> 为响应的 <a href="https://fetch.spec.whatwg.org/#concept-response-url" target="_blank" rel="external">url</a>。</li>
-<li>设置 <code>worker 全局作用域</code>的 <a href="https://html.spec.whatwg.org/multipage/workers.html#concept-workerglobalscope-https-state" target="_blank" rel="external">HTTPS 状态</a>为响应的 <a href="https://fetch.spec.whatwg.org/#concept-response-https-state" target="_blank" rel="external">HTTPS 状态</a>。</li>
-<li>设置 <code>worker 全局作用域</code>的 referrer policy 为处理响应报文头部的<code>Referrer-Policy</code>字段所的到结果。</li>
-<li>在<code>worker的全局作用域</code>和响应上执行<a href="https://w3c.github.io/webappsec-csp/#initialize-global-object-csp" target="_blank" rel="external">初始化全局对象的CSP列表</a>算法。[<a href="https://html.spec.whatwg.org/multipage/references.html#refsCSP" target="_blank" rel="external">CSP(内容安全策略)</a>]</li>
-<li>异步地利用响应来完成<a href="https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-perform-fetch" target="_blank" rel="external">执行fetch操作</a>步骤。</li>
-</ol>
-<p>如果异步执行该算法得到的结果为null，则排队一个任务来发射一个error事件，并且放弃这些步骤。否则，在该算法异步执行完后继续执行之后的步骤。</p>
-</li>
-<li>将worker和worker全局作用域关联起来。</li>
-<li><a href="https://html.spec.whatwg.org/multipage/comms.html#create-a-new-messageport-object" target="_blank" rel="external">创建一个新MessagePort对象</a>，其<a href="https://html.spec.whatwg.org/multipage/comms.html#concept-port-owner" target="_blank" rel="external">所有者</a>是<code>内部设置</code>。让<code>内部端口</code>为新建的对象。</li>
-<li>将 <code>内部端口</code> 和 worker 全局作用域关联起来.</li>
-<li>将<code>外部端口</code>和<code>内部端口</code>牵连起来。</li>
-<li>将<code>文档</code>的<a href="https://html.spec.whatwg.org/multipage/dom.html#document" target="_blank" rel="external">Document</a>对象<a href="https://html.spec.whatwg.org/multipage/workers.html#add-a-document-to-the-worker&#39;s-documents" target="_blank" rel="external">添加到<code>worker的全局作用域</code>下的<code>文档列表</code>里</a>。</li>
-<li>如果<code>parent worker global scope</code>不是null，则添加该worker的<code>worker的全局作用域</code>到<code>parent worker global scope</code>的<a href="https://html.spec.whatwg.org/multipage/workers.html#the-worker&#39;s-workers" target="_blank" rel="external">workers列表</a>里。</li>
-<li>设置 <code>worker的全局作用域</code>的 <a href="https://html.spec.whatwg.org/multipage/workers.html#concept-workerglobalscope-type" target="_blank" rel="external">type</a> 为<code>options</code>的type成员的值。</li>
-<li>创建一个新<a href="https://html.spec.whatwg.org/multipage/workers.html#workerlocation" target="_blank" rel="external">WorkerLocation</a>对象并且将它和<code>worker的全局作用域</code>关联。</li>
-<li><strong>关闭孤儿worker</strong>: 开始监控线程，在晚于其不再是一个<code>受保护线程</code>且早于它不再是一个<code>许可线程</code>时，设置<code>worker的全局作用域</code>的<a href="https://html.spec.whatwg.org/multipage/workers.html#dom-workerglobalscope-closing" target="_blank" rel="external">closing</a> flag为true。</li>
-<li><strong>挂起线程</strong>: 开始监控线程，在worker全局作用域的<a href="https://html.spec.whatwg.org/multipage/workers.html#dom-workerglobalscope-closing" target="_blank" rel="external">closing</a> flag为false并且worker是一个<a href="https://html.spec.whatwg.org/multipage/workers.html#suspendable-worker" target="_blank" rel="external">可挂起线程</a>时，用户代理挂起该线程的脚本的执行直到<a href="https://html.spec.whatwg.org/multipage/workers.html#dom-workerglobalscope-closing" target="_blank" rel="external">closing</a> flag为true或者worker不再是一个<a href="https://html.spec.whatwg.org/multipage/workers.html#suspendable-worker" target="_blank" rel="external">可挂起线程</a>。</li>
-<li>设置 <code>内部设置</code>的<a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag" target="_blank" rel="external">execution ready flag</a>。</li>
-<li><p>如果脚本是一个<a href="https://html.spec.whatwg.org/multipage/webappapis.html#classic-script" target="_blank" rel="external">经典脚本</a>，则<a href="https://html.spec.whatwg.org/multipage/webappapis.html#run-a-classic-script" target="_blank" rel="external">执行该经典脚本</a>操作。否则，该脚本就是一个<a href="https://html.spec.whatwg.org/multipage/webappapis.html#module-script" target="_blank" rel="external">模块脚本</a>并<a href="https://html.spec.whatwg.org/multipage/webappapis.html#run-a-module-script" target="_blank" rel="external">执行模块脚本</a>操作</p>
-<p>除了返回一个值或者由于异常而失败之外，这也可能由于下面定义的”<a href="https://html.spec.whatwg.org/multipage/workers.html#kill-a-worker" target="_blank" rel="external">杀死一个worker线程</a>“或者”<a href="https://html.spec.whatwg.org/multipage/workers.html#terminate-a-worker" target="_blank" rel="external">结束一个worker线程</a>“算法而被提前放弃。</p>
-</li>
-<li><p>启动<code>外部端口</code>的<a href="https://html.spec.whatwg.org/multipage/comms.html#port-message-queue" target="_blank" rel="external">端口消息队列</a>。</p>
-</li>
-<li><p>如果<code>is shared</code>为false，则开启worker的隐藏端口的<a href="https://html.spec.whatwg.org/multipage/comms.html#port-message-queue" target="_blank" rel="external">端口消息队列</a>。</p>
-</li>
-<li>如果<code>is shared</code>为true, 则排队一个任务, 在<code>worker的全局作用域</code>中使用<a href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-manipulation-task-source" target="_blank" rel="external">the DOM manipulation task source</a>来启动一个名为<a href="https://html.spec.whatwg.org/multipage/indices.html#event-workerglobalscope-connect" target="_blank" rel="external">connect</a>的事件，使用<a href="https://html.spec.whatwg.org/multipage/comms.html#messageevent" target="_blank" rel="external">MessageEvent</a>，并将其<a href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageevent-data" target="_blank" rel="external">data</a>特性初始化为空字符串,<a href="">ports</a>特性初始化为一个包含着<code>内部端口</code>的新<a href="https://heycam.github.io/webidl/#dfn-frozen-array-type" target="_blank" rel="external">frozen array</a>，并且<a href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageevent-source" target="_blank" rel="external">source</a>特性初始化为<code>内部端口</code></li>
-<li>启动<a href="https://w3c.github.io/ServiceWorker/#serviceworkercontainer" target="_blank" rel="external">ServiceWorkerContainer</a>对象的<a href="https://w3c.github.io/ServiceWorker/#dfn-client-message-queue" target="_blank" rel="external">客户端消息队列</a>，<a href="https://w3c.github.io/ServiceWorker/#serviceworkercontainer" target="_blank" rel="external">ServiceWorkerContainer</a>对象相关的<a href="https://w3c.github.io/ServiceWorker/#serviceworkercontainer-service-worker-client" target="_blank" rel="external">service worker client</a>是worker全局作用域的<a href="https://html.spec.whatwg.org/multipage/webappapis.html#relevant-settings-object" target="_blank" rel="external">相关设置对象</a>。</li>
-<li><strong>Event loop</strong>: 执行由内部配置指定的<a href="https://html.spec.whatwg.org/multipage/webappapis.html#responsible-event-loop" target="_blank" rel="external">responsible event loop</a>直到其被摧毁。<hr>
-responsible event loop:不会被使用该event loop的环境立刻回收的event loop。<hr>
-由event loop运行的事件的处理或者<a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-task" target="_blank" rel="external">任务</a>的回调函数的执行可能由于下面定义的”<a href="https://html.spec.whatwg.org/multipage/workers.html#kill-a-worker" target="_blank" rel="external">杀死一个worker线程</a>“或者”<a href="https://html.spec.whatwg.org/multipage/workers.html#terminate-a-worker" target="_blank" rel="external">结束一个worker线程</a>“算法而被提前抛弃。<br>该worker处理模型将会循环这些步骤直到event loop被摧毁，这发生在<a href="https://html.spec.whatwg.org/multipage/workers.html#dom-workerglobalscope-closing" target="_blank" rel="external">closing</a> flag被设置为true之后,正如<a href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop" target="_blank" rel="external">event loop</a>处理模型里定义的那样。</li>
-<li>清空该worker全局作用域下的活动中的计时器的列表。</li>
-<li>释放worker的端口列表中的所有端口</li>
-<li>清空worker的文档列表。</li>
-</ol>
-<p>当一个用户代理将要 <strong>杀死一个worker线程</strong>，它必须并行于worker的主循环来执行以下步骤:</p>
-<ol>
-<li>设置该 worker的 WorkerGlobalScope 对象的closing flag 为true.</li>
-<li>如果 WorkerGlobalScope 对象的event loop里的任务队列里还有任务在排队，则直接抛弃它们而不执行。</li>
-<li>等待一段由用户代理定义的时间。</li>
-<li><p>终止worker中正在执行的脚本</p>
-<p>用户代理可以在任意时刻请求“杀死一个worker”处理模型，比如用户请求，cpu配额管理，或者当一个worker不再是一个<code>需要激活线程</code>而该worker在其<code>closing flag</code>被设置为<code>true</code>后仍然继续执行时。</p>
-</li>
-</ol>
-<p>当用户代理要 <strong>结束一个worker线程</strong>，它必须并行于worker的主循环来执行以下步骤:</p>
-<ol>
-<li>设置该 worker的 WorkerGlobalScope 对象的closing flag 为true.</li>
-<li>如果 WorkerGlobalScope 对象的event loop里的任务队列里还有任务在排队，则直接抛弃它们而不执行。</li>
-<li>等待一段由用户代理定义的时间。</li>
-<li>如果该worker的 WorkerGlobalScope对象是一个DedicatedWorkerGlobalScope对象（比如该worker是一个dedicated worker），则清空该worker的隐藏端口所对应的端口的端口消息队列。</li>
-</ol>
-</blockquote>
-<hr>
-<p>注意：由于 whatwg 中web worker的规范依然在更新，您读到这篇文章的时候可能看到已不是最新的处理模型，建议参考 W3C 中的最新规范。</p>
-<hr>
-<h2 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h2><p>当worker内出现了一个运行时错误，它的onerror 事件处理程序会被调用。该事件处理程序会收到一个名为error的事件，它实现了ErrorEvent 接口。<br>该事件可以被取消但是不会冒泡；为了阻止默认行为的发生，该worker可以调用错误事件的<code>preventDefault()</code> 方法。<br>错误事件有以下三个域:</p>
-<ul>
-<li>message<br>  一个人工可读的错误消息。</li>
-<li>filename<br>  发生错误的脚本文件的名字。</li>
-<li>lineno<br>  发生错误的代码在脚本文件中的行数。</li>
-</ul>
-<h3 id="深入规范"><a href="#深入规范" class="headerlink" title="深入规范"></a>深入规范</h3><p>当worker的脚本发生运行时错误时,如果错误没有在处理上一个错误期间发生，则用户代理必需为该脚本所发生的错误, 带上发生错误的代码位置信息（行数和列数）, 使用 WorkerGlobalScope 对象作为目标。</p>
-<p>对于共享worker， 如果错误在之后仍未被处理， 则错误可能会被报告给用户。</p>
-<p>对于专属worker，如果该错误在之后仍未被处理，则用户代理必需排队一个任务来以发射出一个使用ErrorEvent接口实现的受信任的名为error的事件，并带上其消息、文件名、行数、列数和被恰当初始化过的特性，并且错误特性被初始化为null，且该事件不冒泡并且可以在该worker对应的Worker对象上被取消。如果事件没被取消，则用户代理必需表现得像一个未处理的运行时错误发生在Worker对象的全局作用域下那样，逐级往上地重复整个运行时脚本错误报告处理流程。</p>
-<p>如果该worker正在连接着的隐藏端口已经被释放了（比如，如果父worker已经被结束），则该用户代理必需表现的像该the Workerobject没有错误事件处理函数并且该worker的onerror特性是null那样。如果端口未被释放，则执行前述的流程。</p>
-<hr>
-<p>因此，错误报告会从专属worker链一直冒泡到主文档，即使整条链上的一些worker已经被结束并且被垃圾回收。而错误事件则不会冒泡。</p>
-<hr>
-<h2 id="数据传输"><a href="#数据传输" class="headerlink" title="数据传输"></a>数据传输</h2><p>主线程与子线程数据通信方式有多种，通信内容，可以是文本，也可以是对象。主线程与子线程之间也可以交换二进制数据，比如File、Blob、ArrayBuffer等对象，也可以在线程之间发送。比如，主线程向子线程发送一个50MB文件，默认情况下浏览器会生成一个原文件的拷贝。</p>
-<h3 id="通过-cloneable-objects传输数据"><a href="#通过-cloneable-objects传输数据" class="headerlink" title="通过 cloneable objects传输数据"></a>通过 <a href="http://w3c.github.io/html/infrastructure.html#safe-passing-of-structured-data" target="_blank" rel="external">cloneable objects</a>传输数据</h3><p>这种通信是深拷贝关系， 即是传值而不是地址，子线程对通信内容的修改，不会影响到主线程。<br>在传输过程中使用的克隆算法叫<a href="http://w3c.github.io/html/infrastructure.html#structuredclone" target="_blank" rel="external">structured clone algorithm</a>,这种算法允许传输大部分类型，包括：</p>
-<ul>
-<li>正则对象。</li>
-<li>Blob、 File 和 FileList 对象。</li>
-<li>ImageData对象。</li>
-<li>unJSON-safe的对象。</li>
-</ul>
-<hr>
-<p>早期浏览器内部的运行机制是，先将通信内容串行化，然后把串行化后的字符串发给子线程，后者再将它还原。</p>
-<hr>
-<p>不能传输的数据有：</p>
-<ul>
-<li>Error和Function对象，尝试克隆会抛出<code>DATA_CLONE_ERR</code>错误。</li>
-<li>DOM节点，尝试克隆会抛出<code>DATA_CLONE_ERR</code>错误。</li>
-<li>对象的特定参数不会被保留：<ul>
-<li>RegExp对象的lastIndex 域不会被保留。</li>
-<li>属性描述符、数据描述符不会被复制。</li>
-<li>原型链不会被遍历和复制。</li>
-</ul>
-</li>
-</ul>
-<h3 id="通过-transferable-objects传输数据"><a href="#通过-transferable-objects传输数据" class="headerlink" title="通过 transferable objects传输数据"></a>通过 <a href="http://www.w3.org/html/wg/drafts/html/master/infrastructure.html#transferable-objects" target="_blank" rel="external">transferable objects</a>传输数据</h3><p>但是，用拷贝方式发送二进制数据，会造成性能问题。为了解决这个问题，规范定义了<code>Transferable objects</code>，通过控制权移交的方式，将对象从主线程直接转移给子线程，转移后主线程无法再使用这些数据，这是为了防止出现多个线程同时修改数据的问题。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Create a 32MB "file" and fill it.</span></div><div class="line"><span class="keyword">var</span> uInt8Array = <span class="keyword">new</span> <span class="built_in">Uint8Array</span>(<span class="number">1024</span>*<span class="number">1024</span>*<span class="number">32</span>); <span class="comment">// 32MB</span></div><div class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; uInt8Array .length; ++i) &#123;</div><div class="line">    uInt8Array[i] = i;</div><div class="line">&#125;</div><div class="line">worker.postMessage(uInt8Array.buffer, [uInt8Array.buffer]);</div></pre></td></tr></table></figure>
-<h2 id="关于线程安全"><a href="#关于线程安全" class="headerlink" title="关于线程安全"></a>关于线程安全</h2><p>Worker接口生成真正的系统级别的线程，有心的程序员会想到如果不太小心，那么并行会对你的代码产生有趣的影响。</p>
-<p>然而，对于 web worker 来说，与其他线程的通信点会被很细心地控制，这就意味着你很难引起并行问题。你没有办法去访问非线程安全的组件或者是 DOM，此外你还需要通过序列化对象作为数据来在线程间传递。所以你要是不费点劲儿，还真搞不出错误来。</p>
-<h2 id="内容安全策略"><a href="#内容安全策略" class="headerlink" title="内容安全策略"></a>内容安全策略</h2><p>Worker们被视为有它们自己的执行上下文，不同于创建它们的文档。出于这个原因，一般而言，worker不受创建它们的文档（或者父worker）的内容安全策略所约束。所以，举个例子，假设一个服务端返回的文档有如下的头部：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Content-Security-Policy: script-src &apos;self&apos;</div></pre></td></tr></table></figure></p>
-<p>这将会阻止它所包含的任何脚本执行eval()。但是，如果脚本构造了一个worker，在worker上下文中运行的代码将会被允许使用eval()。<br>为了给worker指定内容安全策略，需要为请求的worker脚本的响应报文设置一个  Content-Security-Policy 响应头部。<br>例外，在worker脚本的源是全局唯一标识（比如，当它的URL有一个 Data URI scheme或者blob）的时候，这周情况下，该worker就会继承创建它的文档或者worker的内容安全策略。</p>
-<h2 id="浏览器支持"><a href="#浏览器支持" class="headerlink" title="浏览器支持"></a><a href="http://caniuse.com/#search=web%20worker" target="_blank" rel="external">浏览器支持</a></h2><p><img src="http://p0.meituan.net/kuailv/2eeab3203902eee3bf8565f7fbedaace198201.png" alt="" title="浏览器支持"></p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a href="https://html.spec.whatwg.org/multipage/workers.html" target="_blank" rel="external">HTML living standard — Last Updated 13 April 2017</a></li>
-<li><a href="http://w3c.github.io/html/infrastructure.html#transferable-objects" target="_blank" rel="external">HTML 5.2 Editor’s Draft, 9 April 2017</a></li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API" target="_blank" rel="external">MDN - Web Workers API</a></li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/AbstractWorker" target="_blank" rel="external">MDN - AbstractWorker</a></li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker" target="_blank" rel="external">MDN - Worker</a></li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker" target="_blank" rel="external">MDN - SharedWorker</a></li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope" target="_blank" rel="external">MDN - WorkerGlobalScope</a></li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/DedicatedWorkerGlobalScope" target="_blank" rel="external">MDN - DedicatedWorkerGlobalScope</a></li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/SharedWorkerGlobalScope" target="_blank" rel="external">MDN - SharedWorkerGlobalScope</a></li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;&lt;img src=&quot;http://p0.meituan.net/kuailv/678b764c4d0bff4629f20e748357481c29564.jpg&quot; alt=&quot;&quot; title=&quot;web worker&quot;&gt;&lt;br&gt;Web Workers 是一种不在页面线程而是在后台线程中执行脚本的技术。Web Workers 的优点在于可以将计算密集型和I/O密集型的操作放在一个单独的后台线程中执行，进而使得主线程（通常是UI线程）能够不被阻塞，也不会被减缓。&lt;/p&gt;
-&lt;p&gt;本博客主要内容分为七部分：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Web Worker 概念及使用&lt;/li&gt;
-&lt;li&gt;Web worker的生命周期和处理模型&lt;/li&gt;
-&lt;li&gt;错误处理&lt;/li&gt;
-&lt;li&gt;数据传输&lt;/li&gt;
-&lt;li&gt;线程安全&lt;/li&gt;
-&lt;li&gt;内容安全策略&lt;/li&gt;
-&lt;/ul&gt;
-    
-    </summary>
-    
-      <category term="LexHuang" scheme="http://xgfe.github.io/categories/LexHuang/"/>
-    
-    
-      <category term="javascript" scheme="http://xgfe.github.io/tags/javascript/"/>
-    
-      <category term="web api" scheme="http://xgfe.github.io/tags/web-api/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>远程调用框架Thrift分享</title>
-    <link href="http://xgfe.github.io/2017/05/03/zhouxiong/Thrift/"/>
-    <id>http://xgfe.github.io/2017/05/03/zhouxiong/Thrift/</id>
-    <published>2017-05-02T16:00:00.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="Thrift"><a href="#Thrift" class="headerlink" title="Thrift"></a>Thrift</h2><p>Thrift是一个跨语言的远程调用框架(RPC)，它允许你根据IDL规则定义数据类型和服务接口，然后通过Thrift编译器生成跨语言的client和server端，目前支持市面上所有的主流语言。</p>
-<a id="more"></a>
-<ul>
-<li>主要目标</li>
-</ul>
-<p>建立一种高效，可信赖的跨语言通信方案，不再将客户端和服务端局限于同一种语言上。</p>
-<h2 id="Thrift-VS-Restful"><a href="#Thrift-VS-Restful" class="headerlink" title="Thrift VS Restful"></a>Thrift VS Restful</h2><p>Thrift RPC相比于HTTP的Restful模式有自己的优势，也有不足的地方。</p>
-<table>
-<thead>
-<tr>
-<th>对比项</th>
-<th style="text-align:center">Thrift</th>
-<th>Restful</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>架构设计</td>
-<td style="text-align:center">基于C/S模式</td>
-<td>基于B/S模式</td>
-</tr>
-<tr>
-<td>传输协议</td>
-<td style="text-align:center">可以通过Socket，HTTP传输</td>
-<td>通过HTTP传输</td>
-</tr>
-<tr>
-<td>传输格式</td>
-<td style="text-align:center">基于二进制数据传输</td>
-<td>基于JSON或者XML格式传输</td>
-</tr>
-<tr>
-<td>优势</td>
-<td style="text-align:center">体积更小，传输更快</td>
-<td>充分利用HTTP协议优势</td>
-</tr>
-<tr>
-<td>劣势</td>
-<td style="text-align:center">增加额外序列化和反序列化成本</td>
-<td>针对业务场景HTTP动词太少   </td>
-</tr>
-</tbody>
-</table>
-<h2 id="Thrift基础知识之IDL"><a href="#Thrift基础知识之IDL" class="headerlink" title="Thrift基础知识之IDL"></a>Thrift基础知识之IDL</h2><p>Thrift是一门接口定义语言(interface definition language, IDL)，遵循自己的语言原则。一个IDL文件中包含定义的数据结构以及接口服务，可以由Thrift的代码生成器将源文件(.thrift)编译成各种目标语言支持的文件，例如可以将IDL文件编译成Java支持的.java文件，NodeJS支持的.js文件等。</p>
-<h3 id="基本数据类型"><a href="#基本数据类型" class="headerlink" title="基本数据类型"></a>基本数据类型</h3><ul>
-<li><p>bool 表示一个布尔值，取true或false</p>
-</li>
-<li><p>byte 表示一个带符号的字节</p>
-</li>
-<li><p>i16 表示一个带符号的16位整形</p>
-</li>
-<li><p>i32 表示一个带符号的32位整形 </p>
-</li>
-<li><p>i64 表示一个带符号的64位整形</p>
-</li>
-<li><p>double 表示一个带符号的64位浮点数is</p>
-</li>
-<li><p>string 表示一个不可知编码的文本或二进制串</p>
-</li>
-</ul>
-<h3 id="结构struct"><a href="#结构struct" class="headerlink" title="结构struct"></a>结构struct</h3><p>类似于C++里的结构体，定义一个通用的对象以此来跨语言，通过struct来描述，对于struct有一些限制</p>
-<ul>
-<li><p>struct不能继承，可以嵌套</p>
-</li>
-<li><p>成员必须有明确的数据类型</p>
-</li>
-<li><p>成员是被整数编过号的，编号不能被重复使用</p>
-</li>
-<li><p>字段有required和optional之分，默认值为optional，设置为required，则必须赋值而且会被序列化；设置为optional，则在没有设置值的时候不会进行序列化。而且如果设置为required，而没有赋值时会报错<code>Required field XX is unset!</code></p>
-</li>
-<li><p>字段可以设置默认值</p>
-</li>
-</ul>
-<p>例如定义一个User对象</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"> struct User &#123;</div><div class="line">    1: i16 id,</div><div class="line">    2: string username,</div><div class="line">    3: string password = &apos;123456&apos;,</div><div class="line">    4: required string email,</div><div class="line">    5: optional string telphone</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="容器Containers"><a href="#容器Containers" class="headerlink" title="容器Containers"></a>容器Containers</h3><p>Thrift容器类似于主流编程语言的容器，主要有三种类型：</p>
-<ul>
-<li><p>list&lt; type &gt;：元素类型为type的有序列表，允许重复元素</p>
-</li>
-<li><p>set&lt; type &gt;：元素类型为type的无序列表，不允许重复元素</p>
-</li>
-<li><p>map&lt; key, value&gt;：&lt; key, value&gt;类型的键值对，key不允许重复，一般情况下map的key最好是thrift的基本类型</p>
-</li>
-</ul>
-<p>例如定义一个struct，里面包含三种类型的容器</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">struct User &#123;</div><div class="line">    1: i16 id,</div><div class="line">    2: string username,</div><div class="line">    3: string password,</div><div class="line">    4: required string email,</div><div class="line">    5: optional string telphone</div><div class="line">&#125;</div><div class="line"></div><div class="line">struct Person &#123; </div><div class="line">    1: list&lt;User&gt; userList,</div><div class="line">    2: set&lt;User&gt; userSet,</div><div class="line">    3: map&lt;string, User&gt; userMap</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="枚举Enum"><a href="#枚举Enum" class="headerlink" title="枚举Enum"></a>枚举Enum</h3><p>枚举是很多语言中都有的概念，是有穷序列的所有成员的一种表示方式，具有以下一些特征：</p>
-<ul>
-<li><p>编译器会将每个成员变量赋予一个整数值，默认从0开始</p>
-</li>
-<li><p>可以赋予成员变量任意一个整数值</p>
-</li>
-</ul>
-<p>例如定义一个运算符的枚举</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">enum Operation &#123;</div><div class="line">    ADD = 1,</div><div class="line">    SUBTRACT = 2,</div><div class="line">    MULTIPLY = 3,</div><div class="line">    DIVIDE = 4</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="异常Exception"><a href="#异常Exception" class="headerlink" title="异常Exception"></a>异常Exception</h3><p>Thrift中同样提供了自定义异常信息的exception属性，Thrift的exception继承了每种语言的基础异常类。</p>
-<p>例如，自定义一个运算错误的异常</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">// 运算异常</div><div class="line">exception InvalidOperation &#123;</div><div class="line">    1: i32 whatOp,  </div><div class="line">    2: string why</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="服务Service"><a href="#服务Service" class="headerlink" title="服务Service"></a>服务Service</h3><p>Thrift中的service定义相当于其他语言中的接口定义，service中只有方法的声明，没有方法的实现。Thrift编译器会产生实现这些接口的client和server。</p>
-<p>例如定义个NodeJS的运算Service，注意在service中不需要进行顺序的编码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">service Calculate &#123;</div><div class="line">    void ping(),</div><div class="line"></div><div class="line">    i32 add(1: i32 num1, 2: i32 num2),</div><div class="line"></div><div class="line">    i32 calculate(1: i32 logid, 2: Work work) throws (1: InvalidOperation invalid)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="命名空间Namespace"><a href="#命名空间Namespace" class="headerlink" title="命名空间Namespace"></a>命名空间Namespace</h3><p>Thrift中的namespace类似于c++中的namespace和java中的package，将相关代码组织在一起</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">namespace cpp com.example.test</div><div class="line">namespace java com.example.test </div><div class="line">namespace php com.example.test</div></pre></td></tr></table></figure>
-<h3 id="include"><a href="#include" class="headerlink" title="include"></a>include</h3><p>为了方便管理、重用和提高模块性/组织性，我们常常分割Thrift定义在不同的文件中。Thrift允许文件通过include关键字来引入其它thrift文件，用户需要使用thrift文件名作为前缀访问被包含的对像。</p>
-<p>注意：在include关键那行后面没有逗号或者分号。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">include &quot;test.thrift&quot;   </div><div class="line">...</div><div class="line">struct StSearchResult &#123;</div><div class="line">    1: i32 uid,</div><div class="line">	...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="Thrift基础之底层网络通信"><a href="#Thrift基础之底层网络通信" class="headerlink" title="Thrift基础之底层网络通信"></a>Thrift基础之底层网络通信</h2><p>Thrift的整体架构图如下所示</p>
-<p><img src="https://p1.meituan.net/dpnewvc/c8ae7c1cd293f4317d504b39289f7924517918.png" alt="架构图"></p>
-<p>从架构图中可以看出，我们自己编写的代码只需要实现service就可以，我们其实并不关心底层的Protocol和Transport的实现。</p>
-<h3 id="Transport"><a href="#Transport" class="headerlink" title="Transport"></a>Transport</h3><p>Transport提供了一个简单的网络读写抽象层，是thrift最底层的服务，Transport接口定义了以下一些方法</p>
-<ul>
-<li><p>open</p>
-</li>
-<li><p>close</p>
-</li>
-<li><p>read</p>
-</li>
-<li><p>write</p>
-</li>
-<li><p>flush</p>
-</li>
-</ul>
-<p>目前提供的transport有以下这些：</p>
-<ul>
-<li><p>TSocket：使用阻塞的socket I/O</p>
-</li>
-<li><p>TFramedTransport：以帧的形式发送，每帧前面是一个长度。要求服务器来non-blocking server</p>
-</li>
-<li><p>TFileTransport：写到文件。没有包括在java实现中。</p>
-</li>
-<li><p>TMemoryTransport：使用内存 I/O 。java实现中在内部使用了ByteArrayOutputStream。</p>
-</li>
-<li><p>TZlibTransport：压缩使用zlib。在java实现中还不可用。</p>
-</li>
-</ul>
-<h3 id="Protocol"><a href="#Protocol" class="headerlink" title="Protocol"></a>Protocol</h3><p>Protocol抽象层定义了一种将内存中数据结构映射成可传输格式的机制。换句话说，Protocol定义了datatype怎样使用底层的Transport对自己进行编解码。因此，Protocol的实现要给出编码机制并负责对数据进行序列化。</p>
-<p>目前支持的协议有：</p>
-<ul>
-<li><p>TBinaryProtocol：二进制格式</p>
-</li>
-<li><p>TCompactProtocol：效率和高压缩编码数据</p>
-</li>
-<li><p>TDenseProtocol：和TCompactProtocol相似，但是省略了meta信息，从哪里发送的，增加了receiver。还在实验中，java中还不可用</p>
-</li>
-<li><p>TJSONProtocol：使用JSON</p>
-</li>
-<li><p>TSimpleJSONProtocol：只写的protocol使用JSON</p>
-</li>
-<li><p>TDebugProtocol：使用人类可读的text格式，帮助调试</p>
-</li>
-</ul>
-<h2 id="Thrift使用"><a href="#Thrift使用" class="headerlink" title="Thrift使用"></a>Thrift使用</h2><p>在这里我们要完成的一个功能是使用NodeJS编程，建立Thrift服务，通过客户端向服务端发送请求完成加减乘除的计算，下面对整个过程进行详细讲解。</p>
-<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>参考地址：<a href="https://thrift.apache.org/docs/BuildingFromSource" target="_blank" rel="external">https://thrift.apache.org/docs/BuildingFromSource</a></p>
-<ul>
-<li>下载</li>
-</ul>
-<p>首先将thrift项目clone到本地，thrift地址为<code>https://github.com/apache/thrift.git</code>，然后进入到项目中。</p>
-<ul>
-<li>构建和安装thrift的编译器</li>
-</ul>
-<p>进入到项目的顶级目录中，执行以下命令，安装boost</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./bootstrap.sh</div></pre></td></tr></table></figure>
-<p>然后执行以下命令，安装libevent</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">./configure --prefix=/usr/local</div><div class="line">make</div></pre></td></tr></table></figure>
-<p>在安装过程中可能出现<code>Bison version 2.5 or higher must be installed on the system!</code>的问题，需要安装bison的最新版本</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">brew install bison</div></pre></td></tr></table></figure>
-<p>然后链接bison</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">brew link bison --force</div></pre></td></tr></table></figure>
-<h3 id="建立-thrift文件"><a href="#建立-thrift文件" class="headerlink" title="建立.thrift文件"></a>建立.thrift文件</h3><p>建立一个calculate.thrift文件，在文件中定义struct以及服务接口。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">// 操作运算符</div><div class="line">enum Operation &#123;</div><div class="line">    ADD = 1,</div><div class="line">    SUBTRACT = 2,</div><div class="line">    MULTIPLY = 3,</div><div class="line">    DIVIDE = 4</div><div class="line">&#125;</div><div class="line"></div><div class="line">// 运算实体</div><div class="line">struct Work &#123;</div><div class="line">    1: i32 num1 = 0,</div><div class="line">    2: i32 num2,</div><div class="line">    3: Operation op,</div><div class="line">    4: string comment</div><div class="line">&#125;</div><div class="line"></div><div class="line">// 异常信息</div><div class="line">exception InvalidOperation &#123;</div><div class="line">    1: i32 whatOp,</div><div class="line">    2: string why</div><div class="line">&#125;</div><div class="line"></div><div class="line">// 服务接口</div><div class="line">service Calculate &#123;</div><div class="line">    void ping(),</div><div class="line"></div><div class="line">    i32 add(1: i32 num1, 2: i32 num2),</div><div class="line"></div><div class="line">    i32 calculate(1: i32 logid, 2: Work work) throws (1: InvalidOperation invalid)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="编译-thrift文件"><a href="#编译-thrift文件" class="headerlink" title="编译.thrift文件"></a>编译.thrift文件</h3><p>通过以下命令来编译calculate.thrift文件，—gen后面的参数表示编译成支持NodeJS的文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">thrift -r --gen js:node tutorial.thrift</div></pre></td></tr></table></figure>
-<p>编译后会发现生成了一个gen-nodejs文件夹，下面包含了两个文件<br><img src="https://p1.meituan.net/dpnewvc/e6b5b5b48d0fe84953da10fbffe70edb16813.png" alt="生成的文件夹"></p>
-<h3 id="编写server文件"><a href="#编写server文件" class="headerlink" title="编写server文件"></a>编写server文件</h3><p>Thrift是基于Client/Server模式的，我们需要分别编写server和client文件。</p>
-<ul>
-<li>require</li>
-</ul>
-<p>首先需要通过require的方式引入thrift和刚才生成的gen-nodejs文件夹下的两个文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">var thrift = require(&apos;thrift&apos;);</div><div class="line">var Calculate = require(&apos;../gen-nodejs/Calculate&apos;);</div><div class="line">var ttypes = require(&apos;../gen-nodejs/calculate_types&apos;);</div></pre></td></tr></table></figure>
-<ul>
-<li>创建server</li>
-</ul>
-<p>通过createServer()方法创建一个server，并在内部实现service中定义的几个方法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">var server = thrift.createServer(Calculate, &#123;&#125;)</div></pre></td></tr></table></figure>
-<ul>
-<li>监听端口</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">server.listen(9090);</div></pre></td></tr></table></figure>
-<ul>
-<li>完整代码如下</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line">var thrift = require(&apos;thrift&apos;);</div><div class="line">var Calculate = require(&apos;../gen-nodejs/Calculate&apos;);</div><div class="line">var ttypes = require(&apos;../gen-nodejs/calculate_types&apos;);</div><div class="line"></div><div class="line">var server = thrift.createServer(Calculate, &#123;</div><div class="line">    ping: function (result) &#123;</div><div class="line">        console.log(&apos;ping success&apos;);</div><div class="line">        result(null);</div><div class="line">    &#125;,</div><div class="line">    add: function (num1, num2, result) &#123;</div><div class="line">        console.log(&apos;add success&apos;);</div><div class="line">        result(null, num1 + num2);</div><div class="line">    &#125;,</div><div class="line">    calculate: function (logid, work, result) &#123;</div><div class="line">        console.log(&apos;calculate success&apos;);</div><div class="line">        var val = 0;</div><div class="line">        if (work.op === ttypes.Operation.ADD) &#123;</div><div class="line">            val = work.num1 + work.num2;</div><div class="line">        &#125; else if (work.op === ttypes.Operation.SUBTRACT) &#123;</div><div class="line">            val = work.num1 - work.num2;</div><div class="line">        &#125; else if (work.op === ttypes.Operation.MULTIPLY) &#123;</div><div class="line">            val = work.num1 * work.num2;</div><div class="line">        &#125; else if (work.op === ttypes.Operation.DIVIDE) &#123;</div><div class="line">            if (work.num2 === 0) &#123;</div><div class="line">                var o = new ttypes.InvalidOperation();</div><div class="line">                o.whatOp = work.op;</div><div class="line">                o.why = &apos;Can not divide by 0&apos;;</div><div class="line">                result(o);</div><div class="line">                return;</div><div class="line">            &#125;</div><div class="line">            val = work.num1 / work.num2;</div><div class="line">        &#125; else &#123;</div><div class="line">            var o = new ttypes.InvalidOperation();</div><div class="line">            o.whatOp = work.op;</div><div class="line">            o.why = &apos;invalid operation&apos;;</div><div class="line">            result(o);</div><div class="line">            return;</div><div class="line">        &#125;</div><div class="line">        result(null, val);</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line"></div><div class="line">server.listen(9090);</div></pre></td></tr></table></figure>
-<h3 id="编写client文件"><a href="#编写client文件" class="headerlink" title="编写client文件"></a>编写client文件</h3><ul>
-<li>require</li>
-</ul>
-<p>类似于server端，client端也需要引入相关文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">var thrift = require(&apos;thrift&apos;);</div><div class="line">var Calculator = require(&apos;../gen-nodejs/Calculate&apos;);</div><div class="line">var ttypes = require(&apos;../gen-nodejs/calculate_types&apos;);</div></pre></td></tr></table></figure>
-<ul>
-<li>建立连接</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">var transport = thrift.TBufferedTransport;</div><div class="line">var protocol = thrift.TBinaryProtocol;</div><div class="line"></div><div class="line">var connection = thrift.createConnection(&quot;localhost&quot;, 9090, &#123;</div><div class="line">  transport : transport,</div><div class="line">  protocol : protocol</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<ul>
-<li>创建client</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">var client = thrift.createClient(Calculator, connection);</div></pre></td></tr></table></figure>
-<ul>
-<li>调用service中的方法</li>
-</ul>
-<p>client端通过调用service中的方法向server发送请求</p>
-<ul>
-<li>完整代码</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">var thrift = require(&apos;thrift&apos;);</div><div class="line">var Calculator = require(&apos;../gen-nodejs/Calculate&apos;);</div><div class="line">var ttypes = require(&apos;../gen-nodejs/calculate_types&apos;);</div><div class="line"></div><div class="line">var transport = thrift.TBufferedTransport;</div><div class="line">var protocol = thrift.TBinaryProtocol;</div><div class="line"></div><div class="line">var connection = thrift.createConnection(&apos;localhost&apos;, 9090, &#123;</div><div class="line">    transport: transport,</div><div class="line">    protocol: protocol</div><div class="line">&#125;);</div><div class="line"></div><div class="line">connection.on(&apos;error&apos;, function (error) &#123;</div><div class="line">    console.log(error);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">var client = thrift.createClient(Calculator, connection);</div><div class="line"></div><div class="line">client.ping(function (response) &#123;</div><div class="line">    console.log(&apos;client ping&apos;);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">client.add(1, 1, function (error, response) &#123;</div><div class="line">    console.log(&apos;1 + 1 = &apos;, response);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">var work = new ttypes.Work();</div><div class="line">work.op = ttypes.Operation.SUBTRACT;</div><div class="line">work.num1 = 10;</div><div class="line">work.num2 = 4;</div><div class="line"></div><div class="line">var work2 = new ttypes.Work(&#123;</div><div class="line">    num1: 10,</div><div class="line">    num2: 4,</div><div class="line">    op: ttypes.Operation.SUBTRACT</div><div class="line">&#125;);</div><div class="line"></div><div class="line">client.calculate(1, work2, function (error, response) &#123;</div><div class="line">    if (error) &#123;</div><div class="line">        console.log(error);</div><div class="line">    &#125; else &#123;</div><div class="line">        console.log(&apos;10 - 4 = &apos; + response);</div><div class="line">    &#125;</div><div class="line">    connection.end();</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<h3 id="调用server和client"><a href="#调用server和client" class="headerlink" title="调用server和client"></a>调用server和client</h3><p>直接通过node命令启动server监听端口，然后通过node创建client</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">node server/server.js</div><div class="line"></div><div class="line">node client/client.js</div></pre></td></tr></table></figure>
-<h3 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h3><ul>
-<li><p>服务端<br><img src="https://p1.meituan.net/dpnewvc/14ff01bccad5570e9e923b31798c820d28373.png" alt="服务端结果"></p>
-</li>
-<li><p>客户端<br><img src="https://p1.meituan.net/dpnewvc/8d37bd540b2967cbf8367ce454b4740c23797.png" alt="客户端结果"></p>
-</li>
-</ul>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>1.<a href="http://www.jianshu.com/p/0f4113d6ec4b" target="_blank" rel="external">Thrift IDL入门教程</a></p>
-<p>2.<a href="https://thrift.apache.org/tutorial/nodejs" target="_blank" rel="external">thrift官网的NodeJS实例</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;Thrift&quot;&gt;&lt;a href=&quot;#Thrift&quot; class=&quot;headerlink&quot; title=&quot;Thrift&quot;&gt;&lt;/a&gt;Thrift&lt;/h2&gt;&lt;p&gt;Thrift是一个跨语言的远程调用框架(RPC)，它允许你根据IDL规则定义数据类型和服务接口，然后通过Thrift编译器生成跨语言的client和server端，目前支持市面上所有的主流语言。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="zhouxiong" scheme="http://xgfe.github.io/categories/zhouxiong/"/>
-    
-    
-      <category term="Thrift" scheme="http://xgfe.github.io/tags/Thrift/"/>
-    
-      <category term="NodeJS" scheme="http://xgfe.github.io/tags/NodeJS/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>如何实现一套iOS-router</title>
-    <link href="http://xgfe.github.io/2017/04/21/shsoul/router/"/>
-    <id>http://xgfe.github.io/2017/04/21/shsoul/router/</id>
-    <published>2017-04-21T04:10:21.000Z</published>
-    <updated>2017-09-12T08:43:59.000Z</updated>
-    
-    <content type="html"><![CDATA[<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>本文主要是提供一套iOS-router的解决方案。</p>
-<a id="more"></a>
-<h3 id="router是什么？"><a href="#router是什么？" class="headerlink" title="router是什么？"></a>router是什么？</h3><p>简单的说，router就是用url跟一些操作绑定，我们可以通过我们设定的url，执行设定的操作，如打开某个页面。看图：</p>
-<p><img src="https://p0.meituan.net/dpnewvc/e4c8706c48fdac66aff949f38b599a0015251.png" alt=""></p>
-<h3 id="为什么要router？"><a href="#为什么要router？" class="headerlink" title="为什么要router？"></a>为什么要router？</h3><p>随着我们的项目越来越大，界面越来越多，逻辑越来越复杂。界面间的路由也变得越来越臃肿，耦合越来越大。我们需要一套框架来解决和简化这些问题。也就是说我们需要router。router主要作用：</p>
-<ol>
-<li>解耦界面间的越来越复杂的依赖关系。</li>
-<li>统一接口.</li>
-<li>实现router拦截器。集中处理需要拦截的需求，如登录拦截。也方便埋点。</li>
-<li>方便和其他app的通信，方便处理web跳转到app的逻辑。</li>
-</ol>
-<p>举个例子：</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//使用router前，这里必须在Viewcontroller调用。</span></div><div class="line"></div><div class="line"><span class="built_in">UIViewController</span> *main = [[<span class="built_in">UIViewController</span> alloc] initWithxxx:(<span class="keyword">id</span>)xxx];</div><div class="line">[<span class="keyword">self</span>.navigationController pushViewController:main animated:<span class="literal">YES</span>];</div><div class="line"></div><div class="line"><span class="comment">//使用router后，这里可以任何地方调用。</span></div><div class="line"></div><div class="line">Router.router.build(<span class="string">"/main"</span>).withAnimated(<span class="literal">YES</span>).withObject(<span class="string">@"key"</span>, value).navigate();</div></pre></td></tr></table></figure>
-<h3 id="如何实现router"><a href="#如何实现router" class="headerlink" title="如何实现router"></a>如何实现router</h3><ol>
-<li><p>明确我们需要做什么。</p>
-<ul>
-<li>我们需要一个register来注册我们的类，如ViewController。绑定url和类。</li>
-<li>我们需要一个router来处理我们所有的路由逻辑。因此要定义好router的接口。</li>
-<li>我们需要拦截器。因此要定义好拦截器接口。</li>
-<li>我们需要至少支持push和present两种模式。</li>
-</ul>
-</li>
-<li><p>实现方案<br><img src="https://p0.meituan.net/dpnewvc/c501389026c246735b894934a7cf436a10727.png" alt=""></p>
-<ul>
-<li>在register模块上，保存url和类的映射关系。并保存所有的拦截器。</li>
-<li>在router模块：<ul>
-<li>由于有两种模式，因此得有两个方法调用present和push（个人感觉navigate更合适，因为可以往前或往后导航）</li>
-<li>由于可以前后导航，因此得自定义的vc类中，得定义两个接口，init和update。</li>
-<li>维护路由堆栈，加入新的用init，导航到堆栈中存在的就调update。</li>
-</ul>
-</li>
-<li>在跳转之前，调用所有的拦截器，根据拦截器返回的结果再做真正的跳转操作。</li>
-<li>用的是字典传参。</li>
-<li>由于用的是字典传参，最好加入依赖注入方案。</li>
-</ul>
-</li>
-</ol>
-<h3 id="先假想使用router，再思考封装router。"><a href="#先假想使用router，再思考封装router。" class="headerlink" title="先假想使用router，再思考封装router。"></a>先假想使用router，再思考封装router。</h3><p>在上面的方案中，我们已经定义好了我们的router中的一些内容，大概构思了一个方案。我们先想想如果我们已经有了一套router，我们该怎么使用才满足我们的需求还有体验。（我的想法）</p>
-<ol>
-<li>首先我们自定义一个vc，实现init和update协议。有依赖注入肯定最好，直接调用注入的方法，不用逐一赋值。</li>
-<li>在register模块上注册我们的vc。有拦截器加拦截器。</li>
-<li>最后调用router相应的方法传参和跳转到我们定义的vc吧。为了更好的使用体验(参数的不确定)，用builder模式好一点。</li>
-</ol>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Router.router.build(<span class="string">"/main"</span>).withAnimated(<span class="literal">YES</span>).withObject(<span class="string">@"key"</span>, value).navigate();</div><div class="line"></div><div class="line">Router.router.build(<span class="string">"/login"</span>).withAnimated(<span class="literal">YES</span>).withObject(<span class="string">@"key"</span>, value).present();</div></pre></td></tr></table></figure>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p> 以上是我对router的一些想法，也按照这个想法实现了一套router（KLMRouter）。了解更多请移步<a href="https://github.com/shsoul/KLMRouter" target="_blank" rel="external">github</a>。再也不用关注路由的关系了，只需关注本身页面的构造。达到解耦的效果。特别在嵌套很深的界面中，路由可直接在操作中进行，再也不用回调到外面的controller进行跳转。总的来说，效果不错。</p>
-<p> <img src="https://p0.meituan.net/dpnewvc/e4c8706c48fdac66aff949f38b599a0015251.png" alt=""></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h3 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述&quot;&gt;&lt;/a&gt;概述&lt;/h3&gt;&lt;p&gt;本文主要是提供一套iOS-router的解决方案。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="shsoul" scheme="http://xgfe.github.io/categories/shsoul/"/>
-    
-    
-      <category term="iOS" scheme="http://xgfe.github.io/tags/iOS/"/>
-    
-      <category term="router" scheme="http://xgfe.github.io/tags/router/"/>
     
   </entry>
   
